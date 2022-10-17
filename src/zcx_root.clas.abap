@@ -248,7 +248,7 @@ CLASS ZCX_ROOT IMPLEMENTATION.
     DATA(components) = ziot_cl_log=>get_components_from_msgde( input_data ).
     MESSAGE e002(ziot_basis) WITH object_type to_lower( lv_action ) components subrc INTO DATA(lv_msg).
     DATA(msgde) = create_log_msgde( input_data ).
-    ziot_cl_log=>get_instance( )->log_message( msgde ).
+    ziot_cl_log=>get( )->log_message( msgde ).
 
   ENDMETHOD.
 
