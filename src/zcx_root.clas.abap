@@ -105,14 +105,14 @@ CLASS ZCX_ROOT IMPLEMENTATION.
       APPEND VALUE #( low = lv_line ) TO rt_msgde.
     ENDIF.
 
-    ziot_cl_session=>get_callstack(
+    zial_cl_session=>get_callstack(
       IMPORTING
         et_callstack = DATA(lt_callstack) ).
     DELETE lt_callstack WHERE mainprogram CS 'ZCX_'.
 
     APPEND LINES OF VALUE rsra_t_alert_definition( FOR <s_callstack> IN lt_callstack
                                                      ( low  = |{ <s_callstack>-mainprogram }=>| &&
-                                                              |{ <s_callstack>-event }, { ziot_cl_text=>get_by_enc_text( |LINE| ) } { <s_callstack>-line }| ) ) TO rt_msgde.
+                                                              |{ <s_callstack>-event }, { zial_cl_text=>get_by_enc_text( |LINE| ) } { <s_callstack>-line }| ) ) TO rt_msgde.
 
   ENDMETHOD.
 
@@ -245,10 +245,10 @@ CLASS ZCX_ROOT IMPLEMENTATION.
       lv_action = |[UNKOWN_ACTION]|.
     ENDIF.
 
-    DATA(components) = ziot_cl_log=>get_components_from_msgde( input_data ).
-    MESSAGE e002(ziot_basis) WITH object_type to_lower( lv_action ) components subrc INTO DATA(lv_msg).
+    DATA(components) = zial_cl_log=>get_components_from_msgde( input_data ).
+    MESSAGE e002(zial_basis) WITH object_type to_lower( lv_action ) components subrc INTO DATA(lv_msg).
     DATA(msgde) = create_log_msgde( input_data ).
-    ziot_cl_log=>get( )->log_message( msgde ).
+    zial_cl_log=>get( )->log_message( msgde ).
 
   ENDMETHOD.
 
