@@ -112,7 +112,7 @@ CLASS zcx_root IMPLEMENTATION.
 
     APPEND LINES OF VALUE rsra_t_alert_definition( FOR <s_callstack> IN lt_callstack
                                                      ( low  = |{ <s_callstack>-mainprogram }=>| &&
-                                                              |{ <s_callstack>-event }, { zial_cl_text=>get_by_enc_text( |LINE| ) } { <s_callstack>-line }| ) ) TO rt_msgde.
+                                                              |{ <s_callstack>-event },Line { <s_callstack>-line }| ) ) TO rt_msgde.
 
   ENDMETHOD.
 
