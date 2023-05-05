@@ -10,11 +10,6 @@ CLASS zcx_tmplt_root DEFINITION
   ABSTRACT .
 
   PUBLIC SECTION.
-    METHODS constructor
-      IMPORTING
-        textid   LIKE if_t100_message=>t100key OPTIONAL
-        previous LIKE previous OPTIONAL.
-
     CLASS-METHODS enable_log_parent
       IMPORTING
         iv_log_enabled TYPE abap_bool.
@@ -27,25 +22,10 @@ CLASS zcx_tmplt_root DEFINITION
 
     CLASS-DATA log_parent_enabled TYPE cx_bool VALUE zcx_root=>undef.
 
-  PRIVATE SECTION.
 ENDCLASS.
 
 
 CLASS zcx_tmplt_root IMPLEMENTATION.
-
-  METHOD constructor ##ADT_SUPPRESS_GENERATION.
-
-    super->constructor( previous = previous ).
-
-    CLEAR me->textid.
-    IF textid IS INITIAL.
-      if_t100_message~t100key = if_t100_message=>default_textid.
-    ELSE.
-      if_t100_message~t100key = textid.
-    ENDIF.
-
-  ENDMETHOD.
-
 
   METHOD enable_log_parent.
     log_parent_enabled = zcx_root=>det_bool( iv_log_enabled ).

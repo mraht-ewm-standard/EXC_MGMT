@@ -4,7 +4,7 @@
   <DATA>
    <GROUP_ID>c-a-s.de</GROUP_ID>
    <ARTIFACT_ID>ewm-exc-mgmt</ARTIFACT_ID>
-   <VERSION>12.12.2022.001-rc</VERSION>
+   <VERSION>05.05.2023.001-rc</VERSION>
    <REPOSITORY_TYPE>abapGit</REPOSITORY_TYPE>
    <GIT_URL>https://github.com/mraht-ewm-standard/EXC_MGMT.git</GIT_URL>
   </DATA>

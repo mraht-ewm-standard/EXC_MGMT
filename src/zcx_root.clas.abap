@@ -13,8 +13,8 @@ CLASS zcx_root DEFINITION
 **********************************************************************
 
   PUBLIC SECTION.
-    INTERFACES if_t100_dyn_msg .
-    INTERFACES if_t100_message .
+    INTERFACES if_t100_dyn_msg.
+    INTERFACES if_t100_message.
 
     TYPES: cx_bool TYPE i.
     CONSTANTS: undef TYPE cx_bool VALUE 0,
@@ -23,8 +23,14 @@ CLASS zcx_root DEFINITION
 
     METHODS constructor
       IMPORTING
-        textid   LIKE if_t100_message=>t100key OPTIONAL
-        previous LIKE previous OPTIONAL.
+        textid     LIKE if_t100_message=>t100key OPTIONAL
+        previous   LIKE previous OPTIONAL
+        log        TYPE abap_bool OPTIONAL
+        message    TYPE bapiret2 OPTIONAL
+        subrc      TYPE sysubrc DEFAULT sy-subrc
+        input_data TYPE rsra_t_alert_definition OPTIONAL .
+
+    METHODS if_message~get_text REDEFINITION.
 
     CLASS-METHODS enable_log_root
       IMPORTING
@@ -33,7 +39,8 @@ CLASS zcx_root DEFINITION
   PROTECTED SECTION.
     CLASS-DATA: log_root_enabled TYPE cx_bool VALUE zcx_root=>true.
 
-    DATA: object_type TYPE char50,
+    DATA: message     TYPE bapiret2,
+          object_type TYPE char50,
           subrc       TYPE sysubrc,
           input_data  TYPE rsra_t_alert_definition.
 
@@ -69,7 +76,6 @@ CLASS zcx_root DEFINITION
         VALUE(rv_log) TYPE abap_bool.
     METHODS reset_enable_log_instance.
 
-  PRIVATE SECTION.
 ENDCLASS.
 
 
@@ -78,16 +84,24 @@ CLASS zcx_root IMPLEMENTATION.
 
   METHOD constructor ##ADT_SUPPRESS_GENERATION.
 
-    CALL METHOD super->constructor
-      EXPORTING
-        previous = previous.
+    super->constructor( previous = previous ).
 
-    CLEAR me->textid.
+    CLEAR: me->textid.
     IF textid IS INITIAL.
       if_t100_message~t100key = if_t100_message=>default_textid.
     ELSE.
       if_t100_message~t100key = textid.
     ENDIF.
+
+    IF log IS SUPPLIED.
+      enable_log_instance( log ).
+    ELSE.
+      reset_enable_log_instance( ).
+    ENDIF.
+
+    me->message     = message.
+    me->subrc       = subrc.
+    me->input_data  = input_data.
 
   ENDMETHOD.
 
@@ -255,6 +269,17 @@ CLASS zcx_root IMPLEMENTATION.
 
   METHOD reset_enable_log_instance.
     log_instance_enabled = zcx_root=>undef.
+  ENDMETHOD.
+
+
+  METHOD if_message~get_text.
+
+    IF me->message IS NOT INITIAL.
+      result = zial_cl_log=>to_string( me->message ).
+    ELSEIF me->textid IS NOT INITIAL.
+      result = super->get_text( ).
+    ENDIF.
+
   ENDMETHOD.
 
 ENDCLASS.

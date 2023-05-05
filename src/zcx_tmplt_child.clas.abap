@@ -17,6 +17,7 @@ CLASS zcx_tmplt_child DEFINITION
         textid     LIKE if_t100_message=>t100key OPTIONAL
         previous   LIKE previous OPTIONAL
         log        TYPE abap_bool OPTIONAL
+        message    TYPE bapiret2 OPTIONAL
         subrc      TYPE sysubrc DEFAULT sy-subrc
         input_data TYPE rsra_t_alert_definition OPTIONAL .
 
@@ -38,23 +39,14 @@ CLASS zcx_tmplt_child IMPLEMENTATION.
 
   METHOD constructor ##ADT_SUPPRESS_GENERATION.
 
-    super->constructor( previous = previous ).
-    IF log IS SUPPLIED.
-      enable_log_instance( log ).
-    ELSE.
-      reset_enable_log_instance( ).
-    ENDIF.
+    super->constructor( textid     = textid
+                        previous   = previous
+                        log        = log
+                        message    = message
+                        subrc      = subrc
+                        input_data = input_data ).
 
-    CLEAR me->textid.
-    IF textid IS INITIAL.
-      if_t100_message~t100key = if_t100_message=>default_textid.
-    ELSE.
-      if_t100_message~t100key = textid.
-    ENDIF.
-
-    object_type    = mc_object_type.
-    me->subrc      = subrc.
-    me->input_data = input_data.
+    object_type = mc_object_type.
 
     log_input( 'READ' ).
 
