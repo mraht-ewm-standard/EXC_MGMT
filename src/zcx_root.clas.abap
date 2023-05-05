@@ -75,6 +75,7 @@ CLASS zcx_root DEFINITION
       RETURNING
         VALUE(rv_log) TYPE abap_bool.
     METHODS reset_enable_log_instance.
+    METHODS on_construction.
 
 ENDCLASS.
 
@@ -99,9 +100,21 @@ CLASS zcx_root IMPLEMENTATION.
       reset_enable_log_instance( ).
     ENDIF.
 
-    me->message     = message.
-    me->subrc       = subrc.
-    me->input_data  = input_data.
+    me->message    = message.
+    me->subrc      = subrc.
+    me->input_data = input_data.
+
+    on_construction( ).
+
+  ENDMETHOD.
+
+
+  METHOD on_construction.
+
+    " Customer-specific construction as redefinition of constructor is not
+    " allowed and one would have to define the whole constructor over and
+    " over again in each sub class. Thus wouldn't have to change all sub
+    " classes if the signature of the constructor would change in ROOT class.
 
   ENDMETHOD.
 
