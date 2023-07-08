@@ -30,7 +30,12 @@ CLASS zcx_root DEFINITION
         subrc      TYPE sysubrc DEFAULT sy-subrc
         input_data TYPE rsra_t_alert_definition OPTIONAL .
 
-    METHODS if_message~get_text REDEFINITION.
+    METHODS get_message
+      RETURNING
+        VALUE(rs_message) TYPE bapiret2.
+
+    ALIASES: get_message_text FOR if_message~get_text.
+    METHODS get_message_text REDEFINITION.
 
     CLASS-METHODS enable_log_root
       IMPORTING
@@ -285,13 +290,22 @@ CLASS zcx_root IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD if_message~get_text.
+  METHOD get_message_text.
+
+    CLEAR: sy-msgid, sy-msgno, sy-msgty, sy-msgv1, sy-msgv2, sy-msgv3, sy-msgv4.
 
     IF me->message IS NOT INITIAL.
       result = zial_cl_log=>to_string( me->message ).
     ELSEIF me->textid IS NOT INITIAL.
       result = super->get_text( ).
     ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD get_message.
+
+    rs_message = me->message.
 
   ENDMETHOD.
 
