@@ -270,7 +270,7 @@ CLASS zcx_root IMPLEMENTATION.
 
     CHECK is_log_enabled( ) EQ abap_true.
 
-    DATA(lv_class_name) = cl_abap_classdescr=>get_class_name( me ).
+    DATA(lv_class_name) = cf_issr_basi_object=>get_classname( me ).
     DATA(components) = zial_cl_log=>get_components_from_msgde( input_data ).
     MESSAGE e001(zial_exc_mgmt) WITH lv_class_name components subrc INTO DATA(lv_msg).
     DATA(msgde) = create_log_msgde( input_data ).
