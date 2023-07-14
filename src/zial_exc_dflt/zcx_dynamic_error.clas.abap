@@ -1,13 +1,7 @@
-" Please adjust:
-" 1) Replace [MEANING OF EXCEPTION]
-" 2) INHERITING FROM [PARENT_CLASSNAME]
-" 3) Adjust action name in LOG_INPUT( 'READ' )
-" 4) Delete this paragraph
-
-"! <p class="shorttext synchronized" lang="en">[MEANING OF EXCEPTION]</p>
-CLASS zcx_tmplt_child DEFINITION
+"! <p class="shorttext synchronized" lang="en">Dynamic error</p>
+CLASS zcx_dynamic_error DEFINITION
   PUBLIC
-  INHERITING FROM zcx_tmplt_root
+  INHERITING FROM zcx_dev
   FINAL
   CREATE PUBLIC .
 
@@ -25,7 +19,8 @@ CLASS zcx_tmplt_child DEFINITION
 ENDCLASS.
 
 
-CLASS zcx_tmplt_child IMPLEMENTATION.
+
+CLASS zcx_dynamic_error IMPLEMENTATION.
 
   METHOD enable_log_class.
     log_class_enabled = zcx_root=>det_bool( log_enabled ).

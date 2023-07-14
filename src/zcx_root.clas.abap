@@ -28,14 +28,13 @@ CLASS zcx_root DEFINITION
         log        TYPE abap_bool OPTIONAL
         message    TYPE bapiret2 OPTIONAL
         subrc      TYPE sysubrc DEFAULT sy-subrc
-        input_data TYPE rsra_t_alert_definition OPTIONAL .
+        input_data TYPE rsra_t_alert_definition OPTIONAL.
 
     METHODS get_message
       RETURNING
         VALUE(rs_message) TYPE bapiret2.
 
-    ALIASES: get_message_text FOR if_message~get_text.
-    METHODS get_message_text REDEFINITION.
+    METHODS if_message~get_text REDEFINITION.
 
     CLASS-METHODS enable_log_root
       IMPORTING
@@ -44,10 +43,9 @@ CLASS zcx_root DEFINITION
   PROTECTED SECTION.
     CLASS-DATA: log_root_enabled TYPE cx_bool VALUE zcx_root=>true.
 
-    DATA: message     TYPE bapiret2,
-          object_type TYPE char50,
-          subrc       TYPE sysubrc,
-          input_data  TYPE rsra_t_alert_definition.
+    DATA: message    TYPE bapiret2,
+          subrc      TYPE sysubrc,
+          input_data TYPE rsra_t_alert_definition.
 
     DATA log_instance_enabled TYPE cx_bool VALUE zcx_root=>undef.
 
@@ -62,9 +60,7 @@ CLASS zcx_root DEFINITION
       RETURNING
         VALUE(rv_result) TYPE abap_bool.
 
-    METHODS log_input
-      IMPORTING
-        action TYPE string OPTIONAL.
+    METHODS log_input.
     METHODS create_log_msgde
       IMPORTING
         it_input_data   TYPE rsra_t_alert_definition
@@ -108,6 +104,8 @@ CLASS zcx_root IMPLEMENTATION.
     me->message    = message.
     me->subrc      = subrc.
     me->input_data = input_data.
+
+    log_input( ).
 
     on_construction( ).
 
@@ -272,13 +270,9 @@ CLASS zcx_root IMPLEMENTATION.
 
     CHECK is_log_enabled( ) EQ abap_true.
 
-    DATA(lv_action) = action.
-    IF lv_action IS INITIAL.
-      lv_action = |[UNKOWN_ACTION]|.
-    ENDIF.
-
+    DATA(lv_class_name) = cl_abap_classdescr=>get_class_name( me ).
     DATA(components) = zial_cl_log=>get_components_from_msgde( input_data ).
-    MESSAGE e002(zial_basis) WITH object_type to_lower( lv_action ) components subrc INTO DATA(lv_msg).
+    MESSAGE e001(zial_exc_mgmt) WITH lv_class_name components subrc INTO DATA(lv_msg).
     DATA(msgde) = create_log_msgde( input_data ).
     zial_cl_log=>get( )->log_message( msgde ).
 
@@ -290,13 +284,13 @@ CLASS zcx_root IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD get_message_text.
+  METHOD if_message~get_text.
 
     CLEAR: sy-msgid, sy-msgno, sy-msgty, sy-msgv1, sy-msgv2, sy-msgv3, sy-msgv4.
 
     IF me->message IS NOT INITIAL.
-      result = zial_cl_log=>to_string( me->message ).
-    ELSEIF me->textid IS NOT INITIAL.
+      result = zial_cl_log=>to_string( is_bapiret = me->message ).
+    ELSE.
       result = super->get_text( ).
     ENDIF.
 
@@ -304,6 +298,26 @@ CLASS zcx_root IMPLEMENTATION.
 
 
   METHOD get_message.
+
+    IF me->message IS INITIAL.
+
+      me->message = VALUE #( id         = me->if_t100_message~t100key-msgid
+                             number     = me->if_t100_message~t100key-msgno
+                             type       = me->if_t100_dyn_msg~msgty
+                             message_v1 = me->if_t100_dyn_msg~msgv1
+                             message_v2 = me->if_t100_dyn_msg~msgv2
+                             message_v3 = me->if_t100_dyn_msg~msgv3
+                             message_v4 = me->if_t100_dyn_msg~msgv4 ).
+
+    ENDIF.
+
+    me->message-message = zial_cl_log=>to_string( iv_msgid = me->message-id
+                                                  iv_msgty = me->message-type
+                                                  iv_msgno = me->message-number
+                                                  iv_msgv1 = me->message-message_v1
+                                                  iv_msgv2 = me->message-message_v2
+                                                  iv_msgv3 = me->message-message_v3
+                                                  iv_msgv4 = me->message-message_v4 ).
 
     rs_message = me->message.
 
