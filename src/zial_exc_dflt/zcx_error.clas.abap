@@ -1,5 +1,5 @@
 "! <p class="shorttext synchronized" lang="en">Dynamic error</p>
-CLASS zcx_dynamic_error DEFINITION
+CLASS zcx_error DEFINITION
   PUBLIC
   INHERITING FROM zcx_dev
   FINAL
@@ -20,7 +20,7 @@ ENDCLASS.
 
 
 
-CLASS zcx_dynamic_error IMPLEMENTATION.
+CLASS zcx_error IMPLEMENTATION.
 
   METHOD enable_log_class.
     log_class_enabled = zcx_root=>det_bool( log_enabled ).
