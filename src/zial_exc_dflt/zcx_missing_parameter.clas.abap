@@ -1,7 +1,7 @@
-"! <p class="shorttext synchronized" lang="en">Dynamic error</p>
-CLASS zcx_error DEFINITION
+"! <p class="shorttext synchronized" lang="en">Missing parameter</p>
+CLASS zcx_missing_parameter DEFINITION
   PUBLIC
-  INHERITING FROM zcx_dev
+  INHERITING FROM zcx_static_check
   FINAL
   CREATE PUBLIC .
 
@@ -20,7 +20,7 @@ ENDCLASS.
 
 
 
-CLASS zcx_error IMPLEMENTATION.
+CLASS zcx_missing_parameter IMPLEMENTATION.
 
   METHOD enable_log_class.
     log_class_enabled = det_bool( log_enabled ).

@@ -3,9 +3,9 @@
  <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
   <asx:values>
    <VSEOCLASS>
-    <CLSNAME>ZCX_ERROR</CLSNAME>
+    <CLSNAME>ZCX_MISSING_PARAMETER</CLSNAME>
     <LANGU>E</LANGU>
-    <DESCRIPT>Dynamic error</DESCRIPT>
+    <DESCRIPT>Missing parameter</DESCRIPT>
     <CATEGORY>40</CATEGORY>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
