@@ -14,7 +14,7 @@ CLASS zcx_missing_parameter DEFINITION
         log_enabled TYPE abap_bool.
 
   PROTECTED SECTION.
-    CLASS-DATA log_class_enabled TYPE cx_bool VALUE zcx_root=>undef.
+    CLASS-DATA log_class_enabled TYPE cx_bool VALUE undef.
 
 ENDCLASS.
 

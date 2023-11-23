@@ -20,7 +20,7 @@ CLASS zcx_tmplt_child DEFINITION
         log_enabled TYPE abap_bool.
 
   PROTECTED SECTION.
-    CLASS-DATA log_class_enabled TYPE cx_bool VALUE zcx_root=>undef.
+    CLASS-DATA log_class_enabled TYPE cx_bool VALUE undef.
 
 ENDCLASS.
 
@@ -28,7 +28,7 @@ ENDCLASS.
 CLASS zcx_tmplt_child IMPLEMENTATION.
 
   METHOD enable_log_class.
-    log_class_enabled = zcx_root=>det_bool( log_enabled ).
+    log_class_enabled = det_bool( log_enabled ).
   ENDMETHOD.
 
 

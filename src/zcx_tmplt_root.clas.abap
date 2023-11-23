@@ -5,7 +5,7 @@
 "! <p class="shorttext synchronized" lang="en">[OBJECT_NAME]-specific exceptions: {@link [CLASSNAME]}</p>
 CLASS zcx_tmplt_root DEFINITION
   PUBLIC
-  INHERITING FROM zcx_root
+  INHERITING FROM zcx_static_check
   CREATE PUBLIC
   ABSTRACT .
 
@@ -18,7 +18,7 @@ CLASS zcx_tmplt_root DEFINITION
         VALUE(rv_log_enabled) TYPE cx_bool.
 
   PROTECTED SECTION.
-    CLASS-DATA log_parent_enabled TYPE cx_bool VALUE zcx_root=>undef.
+    CLASS-DATA log_parent_enabled TYPE cx_bool VALUE undef.
 
 ENDCLASS.
 
@@ -26,7 +26,7 @@ ENDCLASS.
 CLASS zcx_tmplt_root IMPLEMENTATION.
 
   METHOD enable_log_parent.
-    log_parent_enabled = zcx_root=>det_bool( iv_log_enabled ).
+    log_parent_enabled = det_bool( iv_log_enabled ).
   ENDMETHOD.
 
 
