@@ -17,64 +17,64 @@ CLASS zcx_static_check DEFINITION
     INTERFACES if_t100_message.
 
     TYPES: cx_bool TYPE i.
-    CONSTANTS: undef TYPE cx_bool VALUE 0,
-               true  TYPE cx_bool VALUE 1,
-               false TYPE cx_bool VALUE 2.
+    CONSTANTS: BEGIN OF mc_log_enabled,
+                 undef TYPE cx_bool VALUE 0,
+                 true  TYPE cx_bool VALUE 1,
+                 false TYPE cx_bool VALUE 2,
+               END OF mc_log_enabled.
 
-    METHODS constructor
-      IMPORTING
-        textid     LIKE if_t100_message=>t100key OPTIONAL
-        previous   LIKE previous OPTIONAL
-        log        TYPE abap_bool OPTIONAL
-        message    TYPE bapiret2 OPTIONAL
-        subrc      TYPE sysubrc DEFAULT sy-subrc
-        input_data TYPE rsra_t_alert_definition OPTIONAL.
-
-    METHODS get_message
-      RETURNING
-        VALUE(rs_message) TYPE bapiret2.
-
-    METHODS if_message~get_text REDEFINITION.
+    CONSTANTS: BEGIN OF mc_obj_id,
+                 generic TYPE objectname VALUE 'OBJECT',
+               END OF mc_obj_id.
 
     CLASS-METHODS enable_log_root
-      IMPORTING
-        iv_log_enabled TYPE abap_bool.
+      IMPORTING iv_log_enabled TYPE abap_bool.
+    CLASS-METHODS is_log_root_enabled
+      RETURNING VALUE(rv_log_enabled) TYPE cx_bool.
+
+    METHODS constructor
+      IMPORTING textid     LIKE if_t100_message=>t100key OPTIONAL
+                previous   LIKE previous OPTIONAL
+                obj_id     TYPE objectname DEFAULT zcx_static_check=>mc_obj_id-generic
+                log        TYPE abap_bool OPTIONAL
+                message    TYPE bapiret2 OPTIONAL
+                subrc      TYPE sysubrc DEFAULT sy-subrc
+                input_data TYPE rsra_t_alert_definition OPTIONAL.
+    METHODS get_message
+      RETURNING VALUE(rs_message) TYPE bapiret2.
+    METHODS get_obj_id
+      RETURNING VALUE(rv_obj_id) TYPE objectname.
+    METHODS get_input_data
+      RETURNING VALUE(rt_input_data) TYPE rsra_t_alert_definition.
+    METHODS if_message~get_text REDEFINITION.
 
   PROTECTED SECTION.
-    CLASS-DATA: log_root_enabled TYPE cx_bool VALUE zcx_static_check=>true.
+    CLASS-DATA: log_root_enabled TYPE cx_bool VALUE mc_log_enabled-true.
 
-    DATA: message    TYPE bapiret2,
+    DATA: obj_id     TYPE objectname,
+          message    TYPE bapiret2,
           subrc      TYPE sysubrc,
           input_data TYPE rsra_t_alert_definition.
 
-    DATA log_instance_enabled TYPE cx_bool VALUE zcx_static_check=>undef.
+    DATA: log_instance_enabled TYPE cx_bool VALUE mc_log_enabled-undef.
 
     CLASS-METHODS det_bool
-      IMPORTING
-        iv_bool          TYPE abap_bool
-      RETURNING
-        VALUE(rv_result) TYPE i.
+      IMPORTING iv_bool          TYPE abap_bool
+      RETURNING VALUE(rv_result) TYPE i.
     CLASS-METHODS det_cx_bool
-      IMPORTING
-        iv_cx_bool       TYPE i
-      RETURNING
-        VALUE(rv_result) TYPE abap_bool.
+      IMPORTING iv_cx_bool       TYPE i
+      RETURNING VALUE(rv_result) TYPE abap_bool.
 
     METHODS log_input.
     METHODS create_log_msgde
-      IMPORTING
-        it_input_data   TYPE rsra_t_alert_definition
-      RETURNING
-        VALUE(rt_msgde) TYPE rsra_t_alert_definition.
+      IMPORTING it_input_data   TYPE rsra_t_alert_definition
+      RETURNING VALUE(rt_msgde) TYPE rsra_t_alert_definition.
     METHODS is_log_instance_enabled
-      RETURNING
-        VALUE(rv_log) TYPE cx_bool.
+      RETURNING VALUE(rv_log_enabled) TYPE cx_bool.
     METHODS enable_log_instance
-      IMPORTING
-        log_enabled TYPE abap_bool.
+      IMPORTING mc_log_enabled TYPE abap_bool.
     METHODS is_log_enabled
-      RETURNING
-        VALUE(rv_log) TYPE abap_bool.
+      RETURNING VALUE(rv_log) TYPE abap_bool.
     METHODS reset_enable_log_instance.
     METHODS on_construction.
 
@@ -151,10 +151,10 @@ CLASS zcx_static_check IMPLEMENTATION.
 
     CASE iv_bool.
       WHEN abap_true.
-        rv_result = true.
+        rv_result = mc_log_enabled-true.
 
       WHEN abap_false.
-        rv_result = false.
+        rv_result = mc_log_enabled-false.
 
     ENDCASE.
 
@@ -164,10 +164,10 @@ CLASS zcx_static_check IMPLEMENTATION.
   METHOD det_cx_bool.
 
     CASE iv_cx_bool.
-      WHEN true.
+      WHEN mc_log_enabled-true.
         rv_result = abap_true.
 
-      WHEN false.
+      WHEN mc_log_enabled-false.
         rv_result = abap_false.
 
     ENDCASE.
@@ -176,12 +176,30 @@ CLASS zcx_static_check IMPLEMENTATION.
 
 
   METHOD enable_log_instance.
-    log_instance_enabled = zcx_static_check=>det_bool( log_enabled ).
+
+    log_instance_enabled = zcx_static_check=>det_bool( mc_log_enabled ).
+
+  ENDMETHOD.
+
+
+  METHOD is_log_instance_enabled.
+
+    rv_log_enabled = log_instance_enabled.
+
   ENDMETHOD.
 
 
   METHOD enable_log_root.
+
     log_root_enabled = zcx_static_check=>det_bool( iv_log_enabled ).
+
+  ENDMETHOD.
+
+
+  METHOD is_log_root_enabled.
+
+    rv_log_enabled = log_root_enabled.
+
   ENDMETHOD.
 
 
@@ -201,8 +219,8 @@ CLASS zcx_static_check IMPLEMENTATION.
         RECEIVING
           rv_log = log_instance_enabled.
       CASE log_instance_enabled.
-        WHEN zcx_static_check=>true
-          OR zcx_static_check=>false.
+        WHEN mc_log_enabled-true
+          OR mc_log_enabled-false.
           rv_log = zcx_static_check=>det_cx_bool( log_instance_enabled ).
           RETURN.
 
@@ -218,8 +236,8 @@ CLASS zcx_static_check IMPLEMENTATION.
         RECEIVING
           rv_log = log_class_enabled.
       CASE log_class_enabled.
-        WHEN zcx_static_check=>true
-          OR zcx_static_check=>false.
+        WHEN mc_log_enabled-true
+          OR mc_log_enabled-false.
           rv_log = zcx_static_check=>det_cx_bool( log_class_enabled ).
           RETURN.
 
@@ -239,8 +257,8 @@ CLASS zcx_static_check IMPLEMENTATION.
           RECEIVING
             rv_log_enabled = log_parent_enabled.
         CASE log_parent_enabled.
-          WHEN zcx_static_check=>true
-            OR zcx_static_check=>false.
+          WHEN mc_log_enabled-true
+            OR mc_log_enabled-false.
             rv_log = zcx_static_check=>det_cx_bool( log_parent_enabled ).
             RETURN.
 
@@ -251,18 +269,13 @@ CLASS zcx_static_check IMPLEMENTATION.
     ENDIF.
 
     CASE log_root_enabled.
-      WHEN zcx_static_check=>true
-        OR zcx_static_check=>false.
+      WHEN mc_log_enabled-true
+        OR mc_log_enabled-false.
         rv_log = zcx_static_check=>det_cx_bool( log_root_enabled ).
         RETURN.
 
     ENDCASE.
 
-  ENDMETHOD.
-
-
-  METHOD is_log_instance_enabled.
-    rv_log = log_instance_enabled.
   ENDMETHOD.
 
 
@@ -280,7 +293,7 @@ CLASS zcx_static_check IMPLEMENTATION.
 
 
   METHOD reset_enable_log_instance.
-    log_instance_enabled = zcx_static_check=>undef.
+    log_instance_enabled = mc_log_enabled-undef.
   ENDMETHOD.
 
 
@@ -320,6 +333,20 @@ CLASS zcx_static_check IMPLEMENTATION.
                                                   iv_msgv4 = me->message-message_v4 ).
 
     rs_message = me->message.
+
+  ENDMETHOD.
+
+
+  METHOD get_obj_id.
+
+    rv_obj_id = me->obj_id.
+
+  ENDMETHOD.
+
+
+  METHOD get_input_data.
+
+    rt_input_data = me->input_data.
 
   ENDMETHOD.
 

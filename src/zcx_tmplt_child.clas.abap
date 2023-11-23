@@ -7,7 +7,7 @@
 "! <p class="shorttext synchronized" lang="en">[MEANING OF EXCEPTION]</p>
 CLASS zcx_tmplt_child DEFINITION
   PUBLIC
-  INHERITING FROM zcx_tmplt_root
+  INHERITING FROM zcx_tmplt_parent
   FINAL
   CREATE PUBLIC .
 
@@ -20,7 +20,7 @@ CLASS zcx_tmplt_child DEFINITION
         log_enabled TYPE abap_bool.
 
   PROTECTED SECTION.
-    CLASS-DATA log_class_enabled TYPE cx_bool VALUE undef.
+    CLASS-DATA log_class_enabled TYPE cx_bool VALUE mc_log_enabled-undef.
 
 ENDCLASS.
 
