@@ -207,11 +207,10 @@ CLASS zcx_static_check IMPLEMENTATION.
 
     CONSTANTS: lc_log_instance_method TYPE string VALUE 'IS_LOG_INSTANCE_ENABLED',
                lc_log_class_method    TYPE string VALUE 'IS_LOG_CLASS_ENABLED',
-               lc_log_parent_method   TYPE string VALUE 'IS_LOG_PARENT_ENABLED'.
+               lc_log_group_method    TYPE string VALUE 'IS_LOG_GROUP_ENABLED'.
 
     DATA: lo_classdescr TYPE REF TO cl_abap_classdescr.
     lo_classdescr ?= cl_abap_typedescr=>describe_by_object_ref( me ).
-
     IF line_exists( lo_classdescr->methods[ name = lc_log_instance_method ] ).
 
       DATA(log_instance_enabled) = VALUE zcx_static_check=>cx_bool( ).
@@ -245,21 +244,20 @@ CLASS zcx_static_check IMPLEMENTATION.
 
     ENDIF.
 
-    DATA(lo_parent_classdescr) = lo_classdescr->get_super_class_type( ).
+    DATA(lo_group_classdescr) = lo_classdescr->get_super_class_type( ).
+    IF lo_group_classdescr IS BOUND.
 
-    IF lo_parent_classdescr IS BOUND.
+      IF line_exists( lo_group_classdescr->methods[ name = lc_log_group_method ] ).
 
-      IF line_exists( lo_parent_classdescr->methods[ name = lc_log_parent_method ] ).
-
-        DATA(lv_parent_name) = lo_parent_classdescr->absolute_name.
-        DATA(log_parent_enabled) = VALUE zcx_static_check=>cx_bool( ).
-        CALL METHOD (lv_parent_name)=>(lc_log_parent_method)
+        DATA(lv_group_name) = lo_group_classdescr->absolute_name.
+        DATA(log_group_enabled) = VALUE zcx_static_check=>cx_bool( ).
+        CALL METHOD (lv_group_name)=>(lc_log_group_method)
           RECEIVING
-            rv_log_enabled = log_parent_enabled.
-        CASE log_parent_enabled.
+            rv_log_enabled = log_group_enabled.
+        CASE log_group_enabled.
           WHEN mc_log_enabled-true
             OR mc_log_enabled-false.
-            rv_log = zcx_static_check=>det_cx_bool( log_parent_enabled ).
+            rv_log = zcx_static_check=>det_cx_bool( log_group_enabled ).
             RETURN.
 
         ENDCASE.
