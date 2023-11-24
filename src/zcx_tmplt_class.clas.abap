@@ -1,9 +1,3 @@
-" Please adjust:
-" 1) Replace [MEANING OF EXCEPTION]
-" 2) INHERITING FROM [PARENT_CLASSNAME]
-" 3) Adjust action name in LOG_INPUT( 'READ' )
-" 4) Delete this paragraph
-
 "! <p class="shorttext synchronized" lang="en">[MEANING OF EXCEPTION]</p>
 CLASS zcx_tmplt_class DEFINITION
   PUBLIC
@@ -12,7 +6,7 @@ CLASS zcx_tmplt_class DEFINITION
   CREATE PUBLIC .
 
   PUBLIC SECTION.
-    INTERFACES: zial_if_exc_class.
+    INTERFACES: zif_cx_class.
 
   PROTECTED SECTION.
     CLASS-DATA log_class_enabled TYPE cx_bool VALUE mc_log_enabled-undef.
@@ -22,13 +16,13 @@ ENDCLASS.
 
 CLASS zcx_tmplt_class IMPLEMENTATION.
 
-  METHOD zial_if_exc_class~enable_log_class.
-    log_class_enabled = det_bool( log_enabled ).
+  METHOD zif_cx_class~enable_log.
+    log_class_enabled = det_bool( iv_enable ).
   ENDMETHOD.
 
 
-  METHOD zial_if_exc_class~is_log_class_enabled.
-    rv_log = log_class_enabled.
+  METHOD zif_cx_class~is_log_enabled.
+    rv_is_enabled = log_class_enabled.
   ENDMETHOD.
 
 ENDCLASS.

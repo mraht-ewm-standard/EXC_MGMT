@@ -6,23 +6,23 @@ CLASS zcx_tmplt_group DEFINITION
   ABSTRACT .
 
   PUBLIC SECTION.
-    INTERFACES: zial_if_exc_group.
+    INTERFACES: zif_cx_group.
 
   PROTECTED SECTION.
-    CLASS-DATA log_parent_enabled TYPE cx_bool VALUE mc_log_enabled-undef.
+    CLASS-DATA log_group_enabled TYPE cx_bool VALUE mc_log_enabled-undef.
 
 ENDCLASS.
 
 
 CLASS zcx_tmplt_group IMPLEMENTATION.
 
-  METHOD zial_if_exc_group~enable_log_group.
-    log_parent_enabled = det_bool( iv_log_enabled ).
+  METHOD zif_cx_group~enable_log.
+    log_group_enabled = det_bool( iv_enable ).
   ENDMETHOD.
 
 
-  METHOD zial_if_exc_group~is_log_group_enabled.
-    rv_log_enabled = log_parent_enabled.
+  METHOD zif_cx_group~is_log_enabled.
+    rv_is_enabled = log_group_enabled.
   ENDMETHOD.
 
 ENDCLASS.

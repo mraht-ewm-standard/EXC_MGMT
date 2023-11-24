@@ -15,6 +15,7 @@ CLASS zcx_static_check DEFINITION
   PUBLIC SECTION.
     INTERFACES if_t100_dyn_msg.
     INTERFACES if_t100_message.
+    INTERFACES zif_cx_root.
 
     TYPES: cx_bool TYPE i.
     CONSTANTS: BEGIN OF mc_log_enabled,
@@ -26,11 +27,6 @@ CLASS zcx_static_check DEFINITION
     CONSTANTS: BEGIN OF mc_obj_id,
                  generic TYPE objectname VALUE 'OBJECT',
                END OF mc_obj_id.
-
-    CLASS-METHODS enable_log_root
-      IMPORTING iv_log_enabled TYPE abap_bool.
-    CLASS-METHODS is_log_root_enabled
-      RETURNING VALUE(rv_log_enabled) TYPE cx_bool.
 
     METHODS constructor
       IMPORTING textid     LIKE if_t100_message=>t100key OPTIONAL
@@ -189,16 +185,16 @@ CLASS zcx_static_check IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD enable_log_root.
+  METHOD zif_cx_root~enable_log.
 
-    log_root_enabled = zcx_static_check=>det_bool( iv_log_enabled ).
+    log_root_enabled = zcx_static_check=>det_bool( iv_enable ).
 
   ENDMETHOD.
 
 
-  METHOD is_log_root_enabled.
+  METHOD zif_cx_root~is_log_enabled.
 
-    rv_log_enabled = log_root_enabled.
+    rv_is_enabled = log_root_enabled.
 
   ENDMETHOD.
 
@@ -206,8 +202,8 @@ CLASS zcx_static_check IMPLEMENTATION.
   METHOD is_log_enabled.
 
     CONSTANTS: lc_log_instance_method TYPE string VALUE 'IS_LOG_INSTANCE_ENABLED',
-               lc_log_class_method    TYPE string VALUE 'IS_LOG_CLASS_ENABLED',
-               lc_log_group_method    TYPE string VALUE 'IS_LOG_GROUP_ENABLED'.
+               lc_log_class_method    TYPE string VALUE 'ZIAL_IF_CX_CLASS~IS_LOG_ENABLED',
+               lc_log_group_method    TYPE string VALUE 'ZIAL_IF_CX_GROUP~IS_LOG_ENABLED'.
 
     DATA: lo_classdescr TYPE REF TO cl_abap_classdescr.
     lo_classdescr ?= cl_abap_typedescr=>describe_by_object_ref( me ).

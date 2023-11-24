@@ -3,7 +3,7 @@
  <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
   <asx:values>
    <VSEOINTERF>
-    <CLSNAME>ZIAL_IF_EXC_CLASS</CLSNAME>
+    <CLSNAME>ZIF_CX_ROOT</CLSNAME>
     <LANGU>E</LANGU>
     <DESCRIPT>Exception class</DESCRIPT>
     <EXPOSURE>2</EXPOSURE>
