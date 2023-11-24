@@ -1,20 +1,15 @@
 "! <p class="shorttext synchronized" lang="en">Dynamic error</p>
 CLASS zcx_error DEFINITION
   PUBLIC
-  INHERITING FROM zcx_dev
+  INHERITING FROM zcx_static_check
   FINAL
   CREATE PUBLIC .
 
   PUBLIC SECTION.
-    CLASS-METHODS is_log_class_enabled
-      RETURNING
-        VALUE(rv_log) TYPE cx_bool.
-    CLASS-METHODS enable_log_class
-      IMPORTING
-        log_enabled TYPE abap_bool.
+    INTERFACES: zial_if_exc_class.
 
   PROTECTED SECTION.
-    CLASS-DATA log_class_enabled TYPE cx_bool VALUE mc_log_enabled-undef.
+    CLASS-DATA log_child_enabled TYPE cx_bool VALUE mc_log_enabled-undef.
 
 ENDCLASS.
 
@@ -22,13 +17,13 @@ ENDCLASS.
 
 CLASS zcx_error IMPLEMENTATION.
 
-  METHOD enable_log_class.
-    log_class_enabled = det_bool( log_enabled ).
+  METHOD zial_if_exc_class~enable_log_class.
+    log_child_enabled = det_bool( log_enabled ).
   ENDMETHOD.
 
 
-  METHOD is_log_class_enabled.
-    rv_log = log_class_enabled.
+  METHOD zial_if_exc_class~is_log_class_enabled.
+    rv_log = log_child_enabled.
   ENDMETHOD.
 
 ENDCLASS.

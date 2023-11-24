@@ -5,19 +5,14 @@
 " 4) Delete this paragraph
 
 "! <p class="shorttext synchronized" lang="en">[MEANING OF EXCEPTION]</p>
-CLASS zcx_tmplt_child DEFINITION
+CLASS zcx_tmplt_class DEFINITION
   PUBLIC
-  INHERITING FROM zcx_tmplt_parent
+  INHERITING FROM zcx_tmplt_group
   FINAL
   CREATE PUBLIC .
 
   PUBLIC SECTION.
-    CLASS-METHODS is_log_class_enabled
-      RETURNING
-        VALUE(rv_log) TYPE cx_bool.
-    CLASS-METHODS enable_log_class
-      IMPORTING
-        log_enabled TYPE abap_bool.
+    INTERFACES: zial_if_exc_class.
 
   PROTECTED SECTION.
     CLASS-DATA log_class_enabled TYPE cx_bool VALUE mc_log_enabled-undef.
@@ -25,14 +20,14 @@ CLASS zcx_tmplt_child DEFINITION
 ENDCLASS.
 
 
-CLASS zcx_tmplt_child IMPLEMENTATION.
+CLASS zcx_tmplt_class IMPLEMENTATION.
 
-  METHOD enable_log_class.
+  METHOD zial_if_exc_class~enable_log_class.
     log_class_enabled = det_bool( log_enabled ).
   ENDMETHOD.
 
 
-  METHOD is_log_class_enabled.
+  METHOD zial_if_exc_class~is_log_class_enabled.
     rv_log = log_class_enabled.
   ENDMETHOD.
 

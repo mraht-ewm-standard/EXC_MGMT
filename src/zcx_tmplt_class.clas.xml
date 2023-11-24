@@ -3,9 +3,9 @@
  <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
   <asx:values>
    <VSEOCLASS>
-    <CLSNAME>ZCX_TMPLT_PARENT</CLSNAME>
+    <CLSNAME>ZCX_TMPLT_CLASS</CLSNAME>
     <LANGU>E</LANGU>
-    <DESCRIPT>[OBJECT_NAME]-specific exceptions: {@link [CLASSNAME]}</DESCRIPT>
+    <DESCRIPT>[MEANING OF EXCEPTION]</DESCRIPT>
     <CATEGORY>40</CATEGORY>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
