@@ -23,7 +23,7 @@ CLASS zial_apack_exc_mgmt IMPLEMENTATION.
     if_apack_manifest~descriptor-group_id    = 'c-a-s.de'.
     if_apack_manifest~descriptor-artifact_id = 'ewm-exc-mgmt'.
     if_apack_manifest~descriptor-version     = '05.05.2023.001-rc'.
-    if_apack_manifest~descriptor-git_url     = 'https://github.com/mraht-ewm-standard/EXC_MGMT.git'.
+    if_apack_manifest~descriptor-git_url     = 'https://github.com/mraht-ewm-standard/EXC_MGMT.git' ##NO_TEXT.
 
   ENDMETHOD.
 

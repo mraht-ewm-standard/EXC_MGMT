@@ -1,7 +1,7 @@
 "! <p class="shorttext synchronized" lang="en">Missing parameter</p>
 CLASS zcx_missing_parameter DEFINITION
   PUBLIC
-  INHERITING FROM zcx_static_check
+  INHERITING FROM zcx_no_check
   FINAL
   CREATE PUBLIC .
 

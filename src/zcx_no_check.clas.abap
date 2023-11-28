@@ -1,6 +1,6 @@
-CLASS zcx_static_check DEFINITION
+CLASS zcx_no_check DEFINITION
   PUBLIC
-  INHERITING FROM cx_static_check
+  INHERITING FROM cx_no_check
   CREATE PUBLIC
   ABSTRACT.
 
@@ -84,7 +84,7 @@ ENDCLASS.
 
 
 
-CLASS zcx_static_check IMPLEMENTATION.
+CLASS zcx_no_check IMPLEMENTATION.
 
   METHOD constructor ##ADT_SUPPRESS_GENERATION.
 
@@ -165,9 +165,9 @@ CLASS zcx_static_check IMPLEMENTATION.
 
   METHOD is_log_enabled.
 
-    CONSTANTS: lc_log_instance_method TYPE string VALUE 'ZIF_CX_ROOT~IS_LOG_INSTANCE_ENABLED',
-               lc_log_class_method    TYPE string VALUE 'ZIF_CX_CLASS~IS_LOG_ENABLED',
-               lc_log_group_method    TYPE string VALUE 'ZIF_CX_GROUP~IS_LOG_ENABLED'.
+    CONSTANTS: lc_log_instance_method TYPE string VALUE 'IS_LOG_INSTANCE_ENABLED',
+               lc_log_class_method    TYPE string VALUE 'ZIAL_IF_CX_CLASS~IS_LOG_ENABLED',
+               lc_log_group_method    TYPE string VALUE 'ZIAL_IF_CX_GROUP~IS_LOG_ENABLED'.
 
     DATA: lo_classdescr TYPE REF TO cl_abap_classdescr.
     lo_classdescr ?= cl_abap_typedescr=>describe_by_object_ref( me ).
@@ -176,7 +176,7 @@ CLASS zcx_static_check IMPLEMENTATION.
       DATA(log_instance_enabled) = VALUE cx_bool( ).
       CALL METHOD me->(lc_log_instance_method)
         RECEIVING
-          rv_is_enabled = log_instance_enabled.
+          rv_log = log_instance_enabled.
       CASE log_instance_enabled.
         WHEN mc_log_enabled-true
           OR mc_log_enabled-false.
@@ -193,7 +193,7 @@ CLASS zcx_static_check IMPLEMENTATION.
       DATA(log_class_enabled) = VALUE cx_bool( ).
       CALL METHOD (lv_class_name)=>(lc_log_class_method)
         RECEIVING
-          rv_is_enabled = log_class_enabled.
+          rv_log = log_class_enabled.
       CASE log_class_enabled.
         WHEN mc_log_enabled-true
           OR mc_log_enabled-false.
@@ -213,7 +213,7 @@ CLASS zcx_static_check IMPLEMENTATION.
         DATA(log_group_enabled) = VALUE cx_bool( ).
         CALL METHOD (lv_group_name)=>(lc_log_group_method)
           RECEIVING
-            rv_is_enabled = log_group_enabled.
+            rv_log_enabled = log_group_enabled.
         CASE log_group_enabled.
           WHEN mc_log_enabled-true
             OR mc_log_enabled-false.
@@ -226,7 +226,7 @@ CLASS zcx_static_check IMPLEMENTATION.
 
     ENDIF.
 
-    rv_is_enabled = is_root_log_enabled( ).
+    rv_is_enabled = is_log_enabled( ).
 
   ENDMETHOD.
 
