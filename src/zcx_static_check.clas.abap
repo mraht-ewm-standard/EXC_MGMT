@@ -40,10 +40,13 @@ CLASS zcx_static_check DEFINITION
                 obj_id     TYPE objectname DEFAULT zcx_static_check=>mc_obj_id-generic
                 log        TYPE abap_bool OPTIONAL
                 message    TYPE bapiret2 OPTIONAL
+                messages   TYPE bapirettab OPTIONAL
                 subrc      TYPE sysubrc DEFAULT sy-subrc
                 input_data TYPE rsra_t_alert_definition OPTIONAL.
     METHODS get_message
       RETURNING VALUE(rs_message) TYPE bapiret2.
+    METHODS get_messages
+      RETURNING VALUE(rt_messages) TYPE bapirettab.
     METHODS get_obj_id
       RETURNING VALUE(rv_obj_id) TYPE objectname.
     METHODS get_input_data
@@ -62,12 +65,13 @@ CLASS zcx_static_check DEFINITION
 
     DATA: obj_id     TYPE objectname,
           message    TYPE bapiret2,
+          messages   TYPE bapirettab,
           subrc      TYPE sysubrc,
           input_data TYPE rsra_t_alert_definition.
 
     DATA: log_instance_enabled TYPE cx_bool VALUE mc_log_enabled-undef.
 
-    METHODS log_input.
+    METHODS log_messages.
     METHODS create_log_msgde
       IMPORTING it_input_data   TYPE rsra_t_alert_definition
       RETURNING VALUE(rt_msgde) TYPE rsra_t_alert_definition.
@@ -104,10 +108,11 @@ CLASS zcx_static_check IMPLEMENTATION.
     ENDIF.
 
     me->message    = message.
+    me->messages   = messages.
     me->subrc      = subrc.
     me->input_data = input_data.
 
-    log_input( ).
+    log_messages( ).
 
     on_construction( ).
 
@@ -231,9 +236,12 @@ CLASS zcx_static_check IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD log_input.
+  METHOD log_messages.
 
     CHECK is_log_enabled( ) EQ abap_true.
+
+    zial_cl_log=>get( )->log_exception( me->previous ).
+    zial_cl_log=>get( )->log_exception( me ).
 
     DATA(lv_class_name) = cl_abap_classdescr=>get_class_name( me ).
     DATA(components) = zial_cl_log=>get_components_from_msgde( input_data ).
@@ -255,6 +263,9 @@ CLASS zcx_static_check IMPLEMENTATION.
 
     IF me->message IS NOT INITIAL.
       result = zial_cl_log=>to_string( is_bapiret = me->message ).
+    ELSEIF me->messages IS NOT INITIAL.
+      DATA(ls_bapiret) = VALUE #( me->messages[ 1 ] ).
+      result = zial_cl_log=>to_string( is_bapiret = ls_bapiret ).
     ELSE.
       result = super->get_text( ).
     ENDIF.
@@ -265,15 +276,17 @@ CLASS zcx_static_check IMPLEMENTATION.
   METHOD get_message.
 
     IF me->message IS INITIAL.
-
-      me->message = VALUE #( id         = me->if_t100_message~t100key-msgid
-                             number     = me->if_t100_message~t100key-msgno
-                             type       = me->if_t100_dyn_msg~msgty
-                             message_v1 = me->if_t100_dyn_msg~msgv1
-                             message_v2 = me->if_t100_dyn_msg~msgv2
-                             message_v3 = me->if_t100_dyn_msg~msgv3
-                             message_v4 = me->if_t100_dyn_msg~msgv4 ).
-
+      IF me->messages IS INITIAL.
+        me->message = VALUE #( id         = me->if_t100_message~t100key-msgid
+                               number     = me->if_t100_message~t100key-msgno
+                               type       = me->if_t100_dyn_msg~msgty
+                               message_v1 = me->if_t100_dyn_msg~msgv1
+                               message_v2 = me->if_t100_dyn_msg~msgv2
+                               message_v3 = me->if_t100_dyn_msg~msgv3
+                               message_v4 = me->if_t100_dyn_msg~msgv4 ).
+      ELSE.
+        me->message = VALUE #( me->messages[ 1 ] OPTIONAL ).
+      ENDIF.
     ENDIF.
 
     me->message-message = zial_cl_log=>to_string( iv_msgid = me->message-id
@@ -285,6 +298,18 @@ CLASS zcx_static_check IMPLEMENTATION.
                                                   iv_msgv4 = me->message-message_v4 ).
 
     rs_message = me->message.
+
+  ENDMETHOD.
+
+
+  METHOD get_messages.
+
+    IF    me->message IS NOT INITIAL
+      AND NOT line_exists( me->messages[ table_line = me->message ] ).
+      INSERT me->message INTO TABLE me->messages.
+    ENDIF.
+
+    rt_messages = me->messages.
 
   ENDMETHOD.
 

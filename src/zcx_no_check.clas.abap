@@ -37,13 +37,16 @@ CLASS zcx_no_check DEFINITION
     METHODS constructor
       IMPORTING textid     LIKE if_t100_message=>t100key OPTIONAL
                 previous   LIKE previous OPTIONAL
-                obj_id     TYPE objectname DEFAULT zcx_static_check=>mc_obj_id-generic
+                obj_id     TYPE objectname DEFAULT zcx_no_check=>mc_obj_id-generic
                 log        TYPE abap_bool OPTIONAL
                 message    TYPE bapiret2 OPTIONAL
+                messages   TYPE bapirettab OPTIONAL
                 subrc      TYPE sysubrc DEFAULT sy-subrc
                 input_data TYPE rsra_t_alert_definition OPTIONAL.
     METHODS get_message
       RETURNING VALUE(rs_message) TYPE bapiret2.
+    METHODS get_messages
+      RETURNING VALUE(rt_messages) TYPE bapirettab.
     METHODS get_obj_id
       RETURNING VALUE(rv_obj_id) TYPE objectname.
     METHODS get_input_data
@@ -62,12 +65,13 @@ CLASS zcx_no_check DEFINITION
 
     DATA: obj_id     TYPE objectname,
           message    TYPE bapiret2,
+          messages   TYPE bapirettab,
           subrc      TYPE sysubrc,
           input_data TYPE rsra_t_alert_definition.
 
     DATA: log_instance_enabled TYPE cx_bool VALUE mc_log_enabled-undef.
 
-    METHODS log_input.
+    METHODS log_messages.
     METHODS create_log_msgde
       IMPORTING it_input_data   TYPE rsra_t_alert_definition
       RETURNING VALUE(rt_msgde) TYPE rsra_t_alert_definition.
@@ -104,10 +108,11 @@ CLASS zcx_no_check IMPLEMENTATION.
     ENDIF.
 
     me->message    = message.
+    me->messages   = messages.
     me->subrc      = subrc.
     me->input_data = input_data.
 
-    log_input( ).
+    log_messages( ).
 
     on_construction( ).
 
@@ -165,9 +170,9 @@ CLASS zcx_no_check IMPLEMENTATION.
 
   METHOD is_log_enabled.
 
-    CONSTANTS: lc_log_instance_method TYPE string VALUE 'IS_LOG_INSTANCE_ENABLED',
-               lc_log_class_method    TYPE string VALUE 'ZIAL_IF_CX_CLASS~IS_LOG_ENABLED',
-               lc_log_group_method    TYPE string VALUE 'ZIAL_IF_CX_GROUP~IS_LOG_ENABLED'.
+    CONSTANTS: lc_log_instance_method TYPE string VALUE 'ZIF_CX_ROOT~IS_LOG_INSTANCE_ENABLED',
+               lc_log_class_method    TYPE string VALUE 'ZIF_CX_CLASS~IS_LOG_ENABLED',
+               lc_log_group_method    TYPE string VALUE 'ZIF_CX_GROUP~IS_LOG_ENABLED'.
 
     DATA: lo_classdescr TYPE REF TO cl_abap_classdescr.
     lo_classdescr ?= cl_abap_typedescr=>describe_by_object_ref( me ).
@@ -176,7 +181,7 @@ CLASS zcx_no_check IMPLEMENTATION.
       DATA(log_instance_enabled) = VALUE cx_bool( ).
       CALL METHOD me->(lc_log_instance_method)
         RECEIVING
-          rv_log = log_instance_enabled.
+          rv_is_enabled = log_instance_enabled.
       CASE log_instance_enabled.
         WHEN mc_log_enabled-true
           OR mc_log_enabled-false.
@@ -193,7 +198,7 @@ CLASS zcx_no_check IMPLEMENTATION.
       DATA(log_class_enabled) = VALUE cx_bool( ).
       CALL METHOD (lv_class_name)=>(lc_log_class_method)
         RECEIVING
-          rv_log = log_class_enabled.
+          rv_is_enabled = log_class_enabled.
       CASE log_class_enabled.
         WHEN mc_log_enabled-true
           OR mc_log_enabled-false.
@@ -213,7 +218,7 @@ CLASS zcx_no_check IMPLEMENTATION.
         DATA(log_group_enabled) = VALUE cx_bool( ).
         CALL METHOD (lv_group_name)=>(lc_log_group_method)
           RECEIVING
-            rv_log_enabled = log_group_enabled.
+            rv_is_enabled = log_group_enabled.
         CASE log_group_enabled.
           WHEN mc_log_enabled-true
             OR mc_log_enabled-false.
@@ -226,14 +231,17 @@ CLASS zcx_no_check IMPLEMENTATION.
 
     ENDIF.
 
-    rv_is_enabled = is_log_enabled( ).
+    rv_is_enabled = is_root_log_enabled( ).
 
   ENDMETHOD.
 
 
-  METHOD log_input.
+  METHOD log_messages.
 
     CHECK is_log_enabled( ) EQ abap_true.
+
+    zial_cl_log=>get( )->log_exception( me->previous ).
+    zial_cl_log=>get( )->log_exception( me ).
 
     DATA(lv_class_name) = cl_abap_classdescr=>get_class_name( me ).
     DATA(components) = zial_cl_log=>get_components_from_msgde( input_data ).
@@ -255,6 +263,9 @@ CLASS zcx_no_check IMPLEMENTATION.
 
     IF me->message IS NOT INITIAL.
       result = zial_cl_log=>to_string( is_bapiret = me->message ).
+    ELSEIF me->messages IS NOT INITIAL.
+      DATA(ls_bapiret) = VALUE #( me->messages[ 1 ] ).
+      result = zial_cl_log=>to_string( is_bapiret = ls_bapiret ).
     ELSE.
       result = super->get_text( ).
     ENDIF.
@@ -265,15 +276,17 @@ CLASS zcx_no_check IMPLEMENTATION.
   METHOD get_message.
 
     IF me->message IS INITIAL.
-
-      me->message = VALUE #( id         = me->if_t100_message~t100key-msgid
-                             number     = me->if_t100_message~t100key-msgno
-                             type       = me->if_t100_dyn_msg~msgty
-                             message_v1 = me->if_t100_dyn_msg~msgv1
-                             message_v2 = me->if_t100_dyn_msg~msgv2
-                             message_v3 = me->if_t100_dyn_msg~msgv3
-                             message_v4 = me->if_t100_dyn_msg~msgv4 ).
-
+      IF me->messages IS INITIAL.
+        me->message = VALUE #( id         = me->if_t100_message~t100key-msgid
+                               number     = me->if_t100_message~t100key-msgno
+                               type       = me->if_t100_dyn_msg~msgty
+                               message_v1 = me->if_t100_dyn_msg~msgv1
+                               message_v2 = me->if_t100_dyn_msg~msgv2
+                               message_v3 = me->if_t100_dyn_msg~msgv3
+                               message_v4 = me->if_t100_dyn_msg~msgv4 ).
+      ELSE.
+        me->message = VALUE #( me->messages[ 1 ] OPTIONAL ).
+      ENDIF.
     ENDIF.
 
     me->message-message = zial_cl_log=>to_string( iv_msgid = me->message-id
@@ -285,6 +298,18 @@ CLASS zcx_no_check IMPLEMENTATION.
                                                   iv_msgv4 = me->message-message_v4 ).
 
     rs_message = me->message.
+
+  ENDMETHOD.
+
+
+  METHOD get_messages.
+
+    IF    me->message IS NOT INITIAL
+      AND NOT line_exists( me->messages[ table_line = me->message ] ).
+      INSERT me->message INTO TABLE me->messages.
+    ENDIF.
+
+    rt_messages = me->messages.
 
   ENDMETHOD.
 
