@@ -72,7 +72,7 @@ CLASS ltc_static_check IMPLEMENTATION.
 
     TRY.
         RAISE EXCEPTION TYPE zcx_error
-          MESSAGE s007(e2) WITH '/SCWM/LGNUM'
+          MESSAGE s002(sy) WITH '/SCWM/LGNUM'
           EXPORTING it_input_data = VALUE #( ( fnam = 'DATA_TYPE'
                                                low  = '/SCWM/LGNUM' ) ).
 
