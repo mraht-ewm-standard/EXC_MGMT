@@ -77,7 +77,7 @@ CLASS lcl_aunit IMPLEMENTATION.
         RAISE EXCEPTION TYPE zcx_missing_parameter
           MESSAGE s007(e2) WITH '/SCWM/LGNUM'
           EXPORTING
-            input_data = VALUE #( ( fnam = 'DATA_TYPE'
+            it_input_data = VALUE #( ( fnam = 'DATA_TYPE'
                                     low  = '/SCWM/LGNUM' ) ).
 
       CATCH zcx_missing_parameter INTO DATA(lx_error).
