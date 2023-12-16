@@ -1,5 +1,5 @@
 "! <p class="shorttext synchronized">ABAP Unit Test Class</p>
-CLASS lcl_aunit DEFINITION FINAL
+CLASS ltc_static_check DEFINITION FINAL
   CREATE PUBLIC
   FOR TESTING RISK LEVEL HARMLESS.
 
@@ -8,7 +8,7 @@ CLASS lcl_aunit DEFINITION FINAL
              lgnum TYPE /scwm/lgnum,
            END OF s_tdc_data.
 
-    CONSTANTS mc_tdc_cnt           TYPE etobj_name VALUE 'ZCL_UNDER_TEST'.
+    CONSTANTS mc_tdc_cnt           TYPE etobj_name VALUE 'ZCX_STATIC_CHECK'.
     CONSTANTS mc_tdc_dflt_var_name TYPE etvar_id   VALUE 'ECATTDEFAULT'.
 
     CLASS-DATA mo_tdc          TYPE REF TO cl_apl_ecatt_tdc_api.
@@ -28,7 +28,7 @@ CLASS lcl_aunit DEFINITION FINAL
 ENDCLASS.
 
 
-CLASS lcl_aunit IMPLEMENTATION.
+CLASS ltc_static_check IMPLEMENTATION.
 
   METHOD class_setup.
 
