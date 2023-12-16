@@ -17,12 +17,12 @@ CLASS zcx_static_check DEFINITION
     INTERFACES if_t100_message.
     INTERFACES zif_cx_root.
 
-    TYPES cx_bool TYPE i.
+    TYPES de_bool TYPE n LENGTH 1.
 
     CONSTANTS: BEGIN OF mc_log_enabled,
-                 undef TYPE cx_bool VALUE 0,
-                 true  TYPE cx_bool VALUE 1,
-                 false TYPE cx_bool VALUE 2,
+                 undef TYPE de_bool VALUE 0,
+                 true  TYPE de_bool VALUE 1,
+                 false TYPE de_bool VALUE 2,
                END OF mc_log_enabled.
 
     CONSTANTS: BEGIN OF mc_obj_id,
@@ -57,14 +57,14 @@ CLASS zcx_static_check DEFINITION
     METHODS if_message~get_text REDEFINITION.
 
   PROTECTED SECTION.
-    CLASS-DATA log_root_enabled TYPE cx_bool VALUE mc_log_enabled-true.
+    CLASS-DATA log_root_enabled TYPE de_bool VALUE mc_log_enabled-true.
 
     CLASS-METHODS det_bool
       IMPORTING iv_bool          TYPE abap_bool
-      RETURNING VALUE(rv_result) TYPE i.
+      RETURNING VALUE(rv_result) TYPE de_bool.
 
     CLASS-METHODS det_cx_bool
-      IMPORTING iv_cx_bool       TYPE i
+      IMPORTING iv_cx_bool       TYPE de_bool
       RETURNING VALUE(rv_result) TYPE abap_bool.
 
     DATA obj_id               TYPE objectname.
@@ -73,7 +73,7 @@ CLASS zcx_static_check DEFINITION
     DATA mv_subrc             TYPE sysubrc.
     DATA mt_input_data        TYPE rsra_t_alert_definition.
 
-    DATA log_instance_enabled TYPE cx_bool VALUE mc_log_enabled-undef.
+    DATA log_instance_enabled TYPE de_bool VALUE mc_log_enabled-undef.
 
     METHODS log_messages.
 
@@ -82,7 +82,7 @@ CLASS zcx_static_check DEFINITION
       RETURNING VALUE(rt_msgde) TYPE rsra_t_alert_definition.
 
     METHODS is_log_instance_enabled
-      RETURNING VALUE(rv_log_enabled) TYPE cx_bool.
+      RETURNING VALUE(rv_log_enabled) TYPE de_bool.
 
     METHODS enable_log_instance
       IMPORTING mc_log_enabled TYPE abap_bool.
@@ -185,7 +185,7 @@ CLASS zcx_static_check IMPLEMENTATION.
     DATA(lo_classdescr) = CAST cl_abap_classdescr( cl_abap_typedescr=>describe_by_object_ref( me ) ).
     IF line_exists( lo_classdescr->methods[ name = lc_log_instance_method ] ).
 
-      DATA(lv_log_instance_enabled) = VALUE cx_bool( ).
+      DATA(lv_log_instance_enabled) = VALUE de_bool( ).
       CALL METHOD (lc_log_instance_method)
         RECEIVING rv_is_enabled = lv_log_instance_enabled.
       CASE lv_log_instance_enabled.
@@ -201,7 +201,7 @@ CLASS zcx_static_check IMPLEMENTATION.
     IF line_exists( lo_classdescr->methods[ name = lc_log_class_method ] ).
 
       DATA(lv_class_name) = lo_classdescr->absolute_name.
-      DATA(lv_log_class_enabled) = VALUE cx_bool( ).
+      DATA(lv_log_class_enabled) = VALUE de_bool( ).
       CALL METHOD (lv_class_name)=>(lc_log_class_method)
         RECEIVING rv_is_enabled = lv_log_class_enabled.
       CASE lv_log_class_enabled.
@@ -219,7 +219,7 @@ CLASS zcx_static_check IMPLEMENTATION.
        AND line_exists( lo_group_classdescr->methods[ name = lc_log_group_method ] ).
 
       DATA(lv_group_name) = lo_group_classdescr->absolute_name.
-      DATA(lv_log_group_enabled) = VALUE cx_bool( ).
+      DATA(lv_log_group_enabled) = VALUE de_bool( ).
       CALL METHOD (lv_group_name)=>(lc_log_group_method)
         RECEIVING rv_is_enabled = lv_log_group_enabled.
       CASE lv_log_group_enabled.
@@ -271,8 +271,7 @@ CLASS zcx_static_check IMPLEMENTATION.
     IF ms_message IS NOT INITIAL.
       result = zial_cl_log=>to_string( is_bapiret = ms_message ).
     ELSEIF mt_messages IS NOT INITIAL.
-      DATA(ls_bapiret) = VALUE #( mt_messages[ 1 ] ).
-      result = zial_cl_log=>to_string( is_bapiret = ls_bapiret ).
+      result = zial_cl_log=>to_string( is_bapiret = mt_messages[ 1 ] ).
     ELSE.
       result = super->get_text( ).
     ENDIF.
