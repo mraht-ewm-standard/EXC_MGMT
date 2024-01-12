@@ -33,14 +33,14 @@ CLASS zcx_no_check DEFINITION
       RETURNING VALUE(rv_is_enabled) TYPE abap_bool.
 
     METHODS constructor
-      IMPORTING iv_textid     LIKE if_t100_message=>t100key OPTIONAL
-                !previous     LIKE previous                 OPTIONAL
-                obj_id        TYPE objectname               DEFAULT mc_obj_id-generic
-                !log          TYPE abap_bool                OPTIONAL
-                is_message    TYPE bapiret2                 OPTIONAL
-                it_messages   TYPE bapirettab               OPTIONAL
-                iv_subrc      TYPE sysubrc                  DEFAULT sy-subrc
-                it_input_data TYPE rsra_t_alert_definition  OPTIONAL.
+      IMPORTING textid     LIKE if_t100_message=>t100key OPTIONAL
+                !previous  LIKE previous                 OPTIONAL
+                obj_id     TYPE objectname               DEFAULT mc_obj_id-generic
+                !log       TYPE abap_bool                OPTIONAL
+                !message   TYPE bapiret2                 OPTIONAL
+                !messages  TYPE bapirettab               OPTIONAL
+                !subrc     TYPE sysubrc                  DEFAULT sy-subrc
+                input_data TYPE rsra_t_alert_definition  OPTIONAL.
 
     METHODS get_message
       RETURNING VALUE(rs_message) TYPE bapiret2.
@@ -99,14 +99,15 @@ ENDCLASS.
 CLASS zcx_no_check IMPLEMENTATION.
 
   METHOD constructor ##ADT_SUPPRESS_GENERATION.
+    " TODO: parameter OBJ_ID is never used (ABAP cleaner)
 
     super->constructor( previous = previous ).
 
     CLEAR me->textid.
-    IF iv_textid IS INITIAL.
+    IF textid IS INITIAL.
       if_t100_message~t100key = if_t100_message=>default_textid.
     ELSE.
-      if_t100_message~t100key = iv_textid.
+      if_t100_message~t100key = textid.
     ENDIF.
 
     IF log IS SUPPLIED.
@@ -115,10 +116,10 @@ CLASS zcx_no_check IMPLEMENTATION.
       reset_enable_log_instance( ).
     ENDIF.
 
-    ms_message    = is_message.
-    mt_messages   = it_messages.
-    mv_subrc      = iv_subrc.
-    mt_input_data = it_input_data.
+    ms_message    = message.
+    mt_messages   = messages.
+    mv_subrc      = subrc.
+    mt_input_data = input_data.
 
     log_messages( ).
 
@@ -157,7 +158,7 @@ CLASS zcx_no_check IMPLEMENTATION.
     APPEND LINES OF VALUE rsra_t_alert_definition( FOR <s_callstack> IN lt_callstack
                                                    ( low = |{ <s_callstack>-mainprogram }=>| &&
                                                            |{ <s_callstack>-event }, | &&
-                                                           |Line { <s_callstack>-line }| ) ) TO rt_msgde.
+                                                           |{ TEXT-001 } { <s_callstack>-line }| ) ) TO rt_msgde.
 
   ENDMETHOD.
 

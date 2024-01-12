@@ -5,7 +5,7 @@ CLASS ltc_static_check DEFINITION FINAL
 
   PRIVATE SECTION.
     TYPES: BEGIN OF s_tdc_data,
-             lgnum TYPE /scwm/lgnum,
+             dummy TYPE dummy,
            END OF s_tdc_data.
 
     CONSTANTS mc_tdc_cnt           TYPE etobj_name VALUE 'ZCX_STATIC_CHECK'.
@@ -49,8 +49,6 @@ CLASS ltc_static_check IMPLEMENTATION.
       UNASSIGN: <lv_tdc_value>, <lv_tdc_var_value>.
     ENDLOOP.
 
-    /scwm/cl_tm=>set_lgnum( ms_tdc_data-lgnum ).
-
   ENDMETHOD.
 
 
@@ -74,8 +72,8 @@ CLASS ltc_static_check IMPLEMENTATION.
 
         RAISE EXCEPTION TYPE zcx_error
           MESSAGE s002(sy) WITH '/SCWM/LGNUM'
-          EXPORTING it_input_data = VALUE #( ( fnam = 'DATA_TYPE'
-                                               low  = '/SCWM/LGNUM' ) ).
+          EXPORTING input_data = VALUE #( ( fnam = 'DATA_TYPE'
+                                            low  = '/SCWM/LGNUM' ) ).
 
       CATCH zcx_error INTO DATA(lx_error).
         DATA(lv_exc_longtext) = lx_error->get_longtext( ). " DOCU_GET

@@ -9,7 +9,7 @@ CLASS zcx_tmplt_class DEFINITION
     INTERFACES: zif_cx_class.
 
   PROTECTED SECTION.
-    CLASS-DATA log_class_enabled TYPE cx_bool VALUE mc_log_enabled-undef.
+    CLASS-DATA log_class_enabled TYPE de_bool VALUE mc_log_enabled-undef.
 
 ENDCLASS.
 

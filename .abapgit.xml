@@ -8,6 +8,9 @@
    </I18N_LANGUAGES>
    <STARTING_FOLDER>/src/</STARTING_FOLDER>
    <FOLDER_LOGIC>FULL</FOLDER_LOGIC>
+   <IGNORE>
+    <item>/src/zial_exc_mgmt.sktd.xml</item>
+   </IGNORE>
   </DATA>
  </asx:values>
 </asx:abap>

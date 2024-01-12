@@ -9,7 +9,7 @@ CLASS zcx_error DEFINITION
     INTERFACES: zif_cx_class.
 
   PROTECTED SECTION.
-    CLASS-DATA log_child_enabled TYPE cx_bool VALUE mc_log_enabled-undef.
+    CLASS-DATA log_child_enabled TYPE de_bool VALUE mc_log_enabled-undef.
 
 ENDCLASS.
 
