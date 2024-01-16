@@ -38,7 +38,7 @@ CLASS zcx_static_check DEFINITION
                 obj_id     TYPE objectname               DEFAULT mc_obj_id-generic
                 !log       TYPE abap_bool                OPTIONAL
                 !message   TYPE bapiret2                 OPTIONAL
-                !messages  TYPE bapirettab               OPTIONAL
+                !messages  TYPE bapiret2_t               OPTIONAL
                 !subrc     TYPE sysubrc                  DEFAULT sy-subrc
                 input_data TYPE rsra_t_alert_definition  OPTIONAL.
 
@@ -46,13 +46,19 @@ CLASS zcx_static_check DEFINITION
       RETURNING VALUE(rs_message) TYPE bapiret2.
 
     METHODS get_messages
-      RETURNING VALUE(rt_messages) TYPE bapirettab.
+      RETURNING VALUE(rt_messages) TYPE bapiret2_t.
 
     METHODS get_obj_id
       RETURNING VALUE(rv_obj_id) TYPE objectname.
 
     METHODS get_input_data
       RETURNING VALUE(rt_input_data) TYPE rsra_t_alert_definition.
+
+    METHODS set_message
+      IMPORTING is_message TYPE bapiret2.
+
+    METHODS set_messages
+      IMPORTING it_messages TYPE bapiret2_t.
 
     METHODS if_message~get_text REDEFINITION.
 
@@ -67,9 +73,9 @@ CLASS zcx_static_check DEFINITION
       IMPORTING iv_cx_bool       TYPE de_bool
       RETURNING VALUE(rv_result) TYPE abap_bool.
 
-    DATA obj_id               TYPE objectname.
+    DATA mv_obj_id            TYPE objectname.
     DATA ms_message           TYPE bapiret2.
-    DATA mt_messages          TYPE bapirettab.
+    DATA mt_messages          TYPE bapiret2_t.
     DATA mv_subrc             TYPE sysubrc.
     DATA mt_input_data        TYPE rsra_t_alert_definition.
 
@@ -99,7 +105,6 @@ ENDCLASS.
 CLASS zcx_static_check IMPLEMENTATION.
 
   METHOD constructor ##ADT_SUPPRESS_GENERATION.
-    " TODO: parameter OBJ_ID is never used (ABAP cleaner)
 
     super->constructor( previous = previous ).
 
@@ -116,6 +121,7 @@ CLASS zcx_static_check IMPLEMENTATION.
       reset_enable_log_instance( ).
     ENDIF.
 
+    mv_obj_id = obj_id.
     ms_message    = message.
     mt_messages   = messages.
     mv_subrc      = subrc.
@@ -309,6 +315,13 @@ CLASS zcx_static_check IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD set_message.
+
+    ms_message = is_message.
+
+  ENDMETHOD.
+
+
   METHOD get_messages.
 
     IF         ms_message IS NOT INITIAL
@@ -321,9 +334,16 @@ CLASS zcx_static_check IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD set_messages.
+
+    mt_messages = it_messages.
+
+  ENDMETHOD.
+
+
   METHOD get_obj_id.
 
-    rv_obj_id = obj_id.
+    rv_obj_id = mv_obj_id.
 
   ENDMETHOD.
 
