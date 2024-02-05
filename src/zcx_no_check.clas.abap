@@ -283,13 +283,24 @@ CLASS zcx_no_check IMPLEMENTATION.
       result = super->get_text( ).
     ENDIF.
 
+    IF     if_t100_message~t100key EQ if_t100_message~default_textid
+       AND previous                IS BOUND.
+      result = previous->get_text( ).
+    ENDIF.
+
   ENDMETHOD.
 
 
   METHOD get_message.
 
     IF ms_message IS INITIAL.
-      IF mt_messages IS INITIAL.
+      IF mt_messages IS NOT INITIAL.
+        ms_message = VALUE #( mt_messages[ 1 ] OPTIONAL ).
+      ELSEIF if_t100_message~t100key EQ if_t100_message~default_textid
+         AND previous                IS BOUND
+         AND previous                IS INSTANCE OF zcx_no_check.
+        ms_message = CAST zcx_no_check( previous )->get_message( ).
+      ELSE.
         ms_message = VALUE #( id         = if_t100_message~t100key-msgid
                               number     = if_t100_message~t100key-msgno
                               type       = if_t100_dyn_msg~msgty
@@ -297,8 +308,10 @@ CLASS zcx_no_check IMPLEMENTATION.
                               message_v2 = if_t100_dyn_msg~msgv2
                               message_v3 = if_t100_dyn_msg~msgv3
                               message_v4 = if_t100_dyn_msg~msgv4 ).
-      ELSE.
-        ms_message = VALUE #( mt_messages[ 1 ] OPTIONAL ).
+
+        CALL FUNCTION 'OWN_LOGICAL_SYSTEM_GET_STABLE'
+          IMPORTING  own_logical_system = ms_message-system
+          EXCEPTIONS OTHERS             = 0.
       ENDIF.
     ENDIF.
 
@@ -317,7 +330,7 @@ CLASS zcx_no_check IMPLEMENTATION.
 
   METHOD set_message.
 
-    ms_message-message = is_message.
+    ms_message = is_message.
 
   ENDMETHOD.
 

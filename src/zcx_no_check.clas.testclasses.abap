@@ -74,7 +74,7 @@ CLASS ltc_static_check IMPLEMENTATION.
   METHOD t0001.
 
     TRY.
-        MESSAGE s002(sy) WITH '/SCWM/LGNUM' INTO DATA(lv_msgtx) ##NEEDED.
+        MESSAGE s002(sy) WITH '/SCWM/LGNUM' INTO DATA(lv_msg) ##NEEDED.
         DATA(ls_bapiret) = zial_cl_log=>to_bapiret( ).
 
         RAISE EXCEPTION TYPE zcx_error
@@ -83,13 +83,14 @@ CLASS ltc_static_check IMPLEMENTATION.
                                             low  = '/SCWM/LGNUM' ) ).
 
       CATCH zcx_error INTO DATA(lx_error).
-        DATA(lv_exc_text)    = lx_error->get_text( ).
-        DATA(ls_exc_bapiret) = lx_error->get_message( ).
+        DATA(lv_exc_longtext) = lx_error->get_longtext( ). " DOCU_GET
+        DATA(lv_exc_text)     = lx_error->get_text( ).
+        DATA(ls_exc_bapiret)  = lx_error->get_message( ).
 
     ENDTRY.
 
-    cl_abap_unit_assert=>assert_equals( exp = lv_msgtx
-                                        act = lv_exc_text ).
+    cl_abap_unit_assert=>assert_equals( exp = lv_exc_text
+                                        act = lv_exc_longtext ).
 
     cl_abap_unit_assert=>assert_equals( exp = ls_bapiret
                                         act = ls_exc_bapiret ).
@@ -103,17 +104,19 @@ CLASS ltc_static_check IMPLEMENTATION.
         MESSAGE s002(sy) WITH '/SCWM/LGNUM' INTO DATA(lv_msgtx) ##NEEDED.
         DATA(ls_bapiret) = zial_cl_log=>to_bapiret( ).
 
-        RAISE EXCEPTION TYPE zcx_error
-          EXPORTING message = ls_bapiret.
+        MESSAGE e002(sy) WITH '/SCWM/LGNUM' INTO lv_msgtx ##NEEDED.
+        RAISE EXCEPTION TYPE zcx_enqueue_not_creatable
+          EXPORTING message = zial_cl_log=>to_bapiret( ).
 
       CATCH zcx_error INTO DATA(lx_error).
-        DATA(lv_exc_text)    = lx_error->get_text( ).
-        DATA(ls_exc_bapiret) = lx_error->get_message( ).
+        DATA(lv_exc_longtext) = lx_error->get_longtext( ). " DOCU_GET
+        DATA(lv_exc_text)     = lx_error->get_text( ).
+        DATA(ls_exc_bapiret)  = lx_error->get_message( ).
 
     ENDTRY.
 
-    cl_abap_unit_assert=>assert_equals( exp = lv_msgtx
-                                        act = lv_exc_text ).
+    cl_abap_unit_assert=>assert_equals( exp = lv_exc_text
+                                        act = lv_exc_longtext ).
 
     cl_abap_unit_assert=>assert_equals( exp = ls_bapiret
                                         act = ls_exc_bapiret ).
@@ -127,17 +130,18 @@ CLASS ltc_static_check IMPLEMENTATION.
         MESSAGE s002(sy) WITH '/SCWM/LGNUM' INTO DATA(lv_msgtx) ##NEEDED.
         DATA(ls_bapiret) = zial_cl_log=>to_bapiret( ).
 
-        RAISE EXCEPTION TYPE zcx_error
+        RAISE EXCEPTION TYPE zcx_enqueue_not_creatable
           EXPORTING messages = VALUE #( ( ls_bapiret ) ).
 
       CATCH zcx_error INTO DATA(lx_error).
-        DATA(lv_exc_text)    = lx_error->get_text( ).
-        DATA(ls_exc_bapiret) = lx_error->get_message( ).
+        DATA(lv_exc_longtext) = lx_error->get_longtext( ). " DOCU_GET
+        DATA(lv_exc_text)     = lx_error->get_text( ).
+        DATA(ls_exc_bapiret)  = lx_error->get_message( ).
 
     ENDTRY.
 
-    cl_abap_unit_assert=>assert_equals( exp = lv_msgtx
-                                        act = lv_exc_text ).
+    cl_abap_unit_assert=>assert_equals( exp = lv_exc_text
+                                        act = lv_exc_longtext ).
 
     cl_abap_unit_assert=>assert_equals( exp = ls_bapiret
                                         act = ls_exc_bapiret ).
@@ -151,18 +155,19 @@ CLASS ltc_static_check IMPLEMENTATION.
         MESSAGE s002(sy) WITH '/SCWM/LGNUM' INTO DATA(lv_msgtx) ##NEEDED.
         DATA(ls_bapiret) = zial_cl_log=>to_bapiret( ).
 
-        DATA(lx_previous) = NEW zcx_error( message = ls_bapiret ).
-        RAISE EXCEPTION TYPE zcx_error
+        DATA(lx_previous) = NEW zcx_enqueue_not_creatable( message = ls_bapiret ).
+        RAISE EXCEPTION TYPE zcx_enqueue_not_creatable
           EXPORTING previous = lx_previous.
 
       CATCH zcx_error INTO DATA(lx_error).
-        DATA(lv_exc_text)    = lx_error->get_text( ).
-        DATA(ls_exc_bapiret) = lx_error->get_message( ).
+        DATA(lv_exc_longtext) = lx_error->get_longtext( ). " DOCU_GET
+        DATA(lv_exc_text)     = lx_error->get_text( ).
+        DATA(ls_exc_bapiret)  = lx_error->get_message( ).
 
     ENDTRY.
 
-    cl_abap_unit_assert=>assert_equals( exp = lv_msgtx
-                                        act = lv_exc_text ).
+    cl_abap_unit_assert=>assert_equals( exp = lv_exc_text
+                                        act = lv_exc_longtext ).
 
     cl_abap_unit_assert=>assert_equals( exp = ls_bapiret
                                         act = ls_exc_bapiret ).
