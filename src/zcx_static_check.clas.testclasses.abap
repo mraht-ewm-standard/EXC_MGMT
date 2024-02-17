@@ -8,12 +8,10 @@ CLASS ltc_static_check DEFINITION FINAL
              dummy TYPE dummy,
            END OF s_tdc_data.
 
-    CONSTANTS mc_tdc_cnt           TYPE etobj_name VALUE 'ZCX_STATIC_CHECK'.
-    CONSTANTS mc_tdc_dflt_var_name TYPE etvar_id   VALUE 'ECATTDEFAULT'.
+    CONSTANTS mc_tdc_cnt TYPE etobj_name VALUE 'ZCX_STATIC_CHECK'.
 
-    CLASS-DATA mo_tdc          TYPE REF TO cl_apl_ecatt_tdc_api.
-    CLASS-DATA mv_tdc_var_name TYPE etvar_id.
-    CLASS-DATA ms_tdc_data     TYPE s_tdc_data.
+    CLASS-DATA mo_aunit    TYPE REF TO zial_cl_aunit.
+    CLASS-DATA ms_tdc_data TYPE s_tdc_data.
 
     CLASS-METHODS class_setup
       RAISING cx_ecatt_tdc_access.
@@ -35,39 +33,30 @@ CLASS ltc_static_check IMPLEMENTATION.
 
   METHOD class_setup.
 
-    TRY.
-        mo_tdc = cl_apl_ecatt_tdc_api=>get_instance( i_testdatacontainer = mc_tdc_cnt ).
+    mo_aunit = zial_cl_aunit=>on_class_setup( iv_tdc_cnt  = mc_tdc_cnt
+                                              ir_tdc_data = REF #( ms_tdc_data ) ).
 
-        mv_tdc_var_name = |{ sy-sysid }{ sy-mandt }|.
-        DATA(lt_tdc_var) = mo_tdc->get_variant_list( ).
-        IF NOT line_exists( lt_tdc_var[ table_line = mv_tdc_var_name ] ).
-          mv_tdc_var_name = mc_tdc_dflt_var_name.
-        ENDIF.
+  ENDMETHOD.
 
-        LOOP AT mo_tdc->get_variant_content( mv_tdc_var_name ) ASSIGNING FIELD-SYMBOL(<ls_tdc_var_content>).
-          ASSIGN COMPONENT <ls_tdc_var_content>-parname OF STRUCTURE ms_tdc_data TO FIELD-SYMBOL(<lv_tdc_value>).
-          CHECK <lv_tdc_value> IS ASSIGNED.
-          ASSIGN <ls_tdc_var_content>-value_ref->* TO FIELD-SYMBOL(<lv_tdc_var_value>).
-          CHECK <lv_tdc_var_value> IS ASSIGNED.
-          <lv_tdc_value> = <lv_tdc_var_value>.
-          UNASSIGN: <lv_tdc_value>, <lv_tdc_var_value>.
-        ENDLOOP.
 
-      CATCH cx_root.
-    ENDTRY.
+  METHOD setup.
+
+    mo_aunit->on_setup( ).
+
+  ENDMETHOD.
+
+
+  METHOD teardown.
+
+    mo_aunit->on_teardown( ).
 
   ENDMETHOD.
 
 
   METHOD class_teardown.
-  ENDMETHOD.
 
+    mo_aunit->on_class_teardown( ).
 
-  METHOD setup.
-  ENDMETHOD.
-
-
-  METHOD teardown.
   ENDMETHOD.
 
 
