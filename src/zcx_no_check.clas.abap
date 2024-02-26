@@ -3,15 +3,6 @@ CLASS zcx_no_check DEFINITION
   INHERITING FROM cx_no_check ABSTRACT
   CREATE PUBLIC.
 
-  " ---------------------------------------------------------------------
-  " Notes regarding Logging:
-  " Please use the new syntax RAISE EXCEPTION NEW to avoid logging
-  " messages being cleaned up by SAP after RAISE EXCEPTION TYPE. If
-  " one doesn't use INTO DATA in the CATCH block the object and all
-  " changes to external objects are being rolled back too! This is
-  " not the case if you create exception objects explicitly!
-  " ---------------------------------------------------------------------
-
   PUBLIC SECTION.
     INTERFACES if_t100_dyn_msg.
     INTERFACES if_t100_message.
@@ -60,10 +51,12 @@ CLASS zcx_no_check DEFINITION
     METHODS set_messages
       IMPORTING it_messages TYPE bapiret2_t.
 
+    METHODS log_exception_raised.
+
     METHODS if_message~get_text REDEFINITION.
 
   PROTECTED SECTION.
-    CLASS-DATA log_root_enabled TYPE de_bool VALUE mc_log_enabled-true.
+    CLASS-DATA log_root_enabled TYPE de_bool VALUE mc_log_enabled-false.
 
     CLASS-METHODS det_bool
       IMPORTING iv_bool          TYPE abap_bool
@@ -81,8 +74,6 @@ CLASS zcx_no_check DEFINITION
 
     DATA log_instance_enabled TYPE de_bool VALUE mc_log_enabled-undef.
 
-    METHODS log_messages.
-
     METHODS create_log_msgde
       IMPORTING it_input_data   TYPE rsra_t_alert_definition
       RETURNING VALUE(rt_msgde) TYPE rsra_t_alert_definition.
@@ -97,7 +88,21 @@ CLASS zcx_no_check DEFINITION
       RETURNING VALUE(rv_is_enabled) TYPE abap_bool.
 
     METHODS reset_enable_log_instance.
+
     METHODS on_construction.
+
+    "! <p class="shorttext synchronized"></p>
+    "! <p><strong>Note:</strong>
+    "! Z-Exceptions support automatic logging if the new syntax RAISE EXCEPTION NEW
+    "! is being used or the exception object is being constructed either manually
+    "! before being thrown or in the catching block via INTO DATA(lo_exception). As
+    "! we want to handle all exception types (SAP and Non-SAP) the same way in regards
+    "! to logging,  automatic logging has been turned off (LOG_ROOT_ENABLED) and one
+    "! has to use ZIAL_CL_LOG=>GET( )->LOG_EXCEPTION( LO_EXCEPTION ). The parameter
+    "! should be turned on again if automatic logging is to be used or everyone only
+    "! works with RAISE EXCEPTION NEW as this always triggers the object constructor
+    "! and thus the logging.</p>
+    METHODS log_messages.
 
 ENDCLASS.
 
@@ -121,7 +126,7 @@ CLASS zcx_no_check IMPLEMENTATION.
       reset_enable_log_instance( ).
     ENDIF.
 
-    mv_obj_id = obj_id.
+    mv_obj_id     = obj_id.
     ms_message    = message.
     mt_messages   = messages.
     mv_subrc      = subrc.
@@ -148,23 +153,14 @@ CLASS zcx_no_check IMPLEMENTATION.
 
     DATA(lv_line) = repeat( val = '-'
                             occ = 80 ).
-    DATA(lv_class_name) = cl_abap_classdescr=>get_class_name( me ).
+    DATA(lo_abap_classdescr) = CAST cl_abap_classdescr( cl_abap_classdescr=>describe_by_object_ref( me ) ).
+    DATA(lv_class_name) = lo_abap_classdescr->get_relative_name( ).
 
     APPEND LINES OF VALUE rsra_t_alert_definition( ( low  = lv_class_name ) ) TO rt_msgde.
     APPEND VALUE #( low = lv_line ) TO rt_msgde.
+    APPEND LINES OF it_input_data TO rt_msgde.
 
-    IF it_input_data IS NOT INITIAL.
-      APPEND LINES OF it_input_data TO rt_msgde.
-      APPEND VALUE #( low = lv_line ) TO rt_msgde.
-    ENDIF.
-
-    zial_cl_session=>get_callstack( IMPORTING et_callstack = DATA(lt_callstack) ).
-    DELETE lt_callstack WHERE mainprogram CS 'ZCX_'.
-
-    APPEND LINES OF VALUE rsra_t_alert_definition( FOR <s_callstack> IN lt_callstack
-                                                   ( low = |{ <s_callstack>-mainprogram }=>| &&
-                                                           |{ <s_callstack>-event }, | &&
-                                                           |{ TEXT-001 } { <s_callstack>-line }| ) ) TO rt_msgde.
+    " Callstack is being added via ZIAL_CL_LOG=>GET( )->LOG_EXCEPTION( lo_exception ).
 
   ENDMETHOD.
 
@@ -244,18 +240,27 @@ CLASS zcx_no_check IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD log_exception_raised.
+
+    DATA(lo_abap_classdescr) = CAST cl_abap_classdescr( cl_abap_classdescr=>describe_by_object_ref( me ) ).
+    DATA(lv_class_name) = lo_abap_classdescr->get_relative_name( ).
+    DATA(lt_components) = zial_cl_log=>get_components_from_msgde( mt_input_data ).
+
+    MESSAGE e001(zial_exc_mgmt) WITH lv_class_name lt_components mv_subrc INTO DATA(lv_msg) ##NEEDED.
+    DATA(lt_msgde) = create_log_msgde( mt_input_data ).
+    zial_cl_log=>get( )->log_message( lt_msgde ).
+
+  ENDMETHOD.
+
+
   METHOD log_messages.
 
     CHECK is_log_enabled( ) EQ abap_true.
 
-    zial_cl_log=>get( )->log_exception( previous ).
-    zial_cl_log=>get( )->log_exception( me ).
+    log_exception_raised( ).
 
-    DATA(lv_class_name) = cl_abap_classdescr=>get_class_name( me ).
-    DATA(lt_components) = zial_cl_log=>get_components_from_msgde( mt_input_data ).
-    MESSAGE e001(zial_exc_mgmt) WITH lv_class_name lt_components mv_subrc INTO DATA(lv_msg) ##NEEDED.
-    DATA(lt_msgde) = create_log_msgde( mt_input_data ).
-    zial_cl_log=>get( )->log_message( lt_msgde ).
+    DATA(lt_bapiret) = get_messages( ).
+    zial_cl_log=>get( )->log_bapiret( lt_bapiret ).
 
   ENDMETHOD.
 
@@ -309,19 +314,24 @@ CLASS zcx_no_check IMPLEMENTATION.
                               message_v3 = if_t100_dyn_msg~msgv3
                               message_v4 = if_t100_dyn_msg~msgv4 ).
 
-        CALL FUNCTION 'OWN_LOGICAL_SYSTEM_GET_STABLE'
-          IMPORTING  own_logical_system = ms_message-system
-          EXCEPTIONS OTHERS             = 0.
       ENDIF.
     ENDIF.
 
-    ms_message-message = zial_cl_log=>to_string( iv_msgid = ms_message-id
-                                                 iv_msgty = ms_message-type
-                                                 iv_msgno = ms_message-number
-                                                 iv_msgv1 = ms_message-message_v1
-                                                 iv_msgv2 = ms_message-message_v2
-                                                 iv_msgv3 = ms_message-message_v3
-                                                 iv_msgv4 = ms_message-message_v4 ).
+    IF ms_message-system IS INITIAL.
+      CALL FUNCTION 'OWN_LOGICAL_SYSTEM_GET_STABLE'
+        IMPORTING  own_logical_system = ms_message-system
+        EXCEPTIONS OTHERS             = 0.
+    ENDIF.
+
+    IF ms_message-message IS INITIAL.
+      ms_message-message = zial_cl_log=>to_string( iv_msgid = ms_message-id
+                                                   iv_msgty = ms_message-type
+                                                   iv_msgno = ms_message-number
+                                                   iv_msgv1 = ms_message-message_v1
+                                                   iv_msgv2 = ms_message-message_v2
+                                                   iv_msgv3 = ms_message-message_v3
+                                                   iv_msgv4 = ms_message-message_v4 ).
+    ENDIF.
 
     rs_message = ms_message.
 
@@ -336,6 +346,15 @@ CLASS zcx_no_check IMPLEMENTATION.
 
 
   METHOD get_messages.
+
+    IF previous IS BOUND.
+      IF previous IS INSTANCE OF zcx_no_check.
+        INSERT LINES OF CAST zcx_no_check( previous )->get_messages( ) INTO TABLE mt_messages.
+      ELSE.
+        INSERT zial_cl_log=>to_bapiret( iv_msgtx = CONV #( previous->get_text( ) )
+                                        iv_msgty = 'E' ) INTO TABLE mt_messages.
+      ENDIF.
+    ENDIF.
 
     IF         ms_message IS NOT INITIAL
        AND NOT line_exists( mt_messages[ table_line = ms_message ] ).
