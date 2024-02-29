@@ -34,6 +34,13 @@
      </TEXTPOOL>
     </item>
    </I18N_TPOOL>
+   <DESCRIPTIONS>
+    <SEOCOMPOTX>
+     <CMPNAME>ON_CONSTRUCTION</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Custom code on construction</DESCRIPT>
+    </SEOCOMPOTX>
+   </DESCRIPTIONS>
   </asx:values>
  </asx:abap>
 </abapGit>

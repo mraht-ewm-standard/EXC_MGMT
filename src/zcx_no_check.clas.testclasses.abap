@@ -68,8 +68,8 @@ CLASS ltc_no_check IMPLEMENTATION.
 
         RAISE EXCEPTION TYPE zcx_error
           MESSAGE s002(sy) WITH '/SCWM/LGNUM'
-          EXPORTING input_data = VALUE #( ( fnam = 'DATA_TYPE'
-                                            low  = '/SCWM/LGNUM' ) ).
+          EXPORTING it_input_data = VALUE #( ( fnam = 'DATA_TYPE'
+                                               low  = '/SCWM/LGNUM' ) ).
 
       CATCH zcx_error INTO DATA(lx_error).
         DATA(lv_exc_text)    = lx_error->get_text( ).
@@ -93,7 +93,7 @@ CLASS ltc_no_check IMPLEMENTATION.
         DATA(ls_bapiret) = zial_cl_log=>to_bapiret( ).
 
         RAISE EXCEPTION TYPE zcx_error
-          EXPORTING message = ls_bapiret.
+          EXPORTING is_message = ls_bapiret.
 
       CATCH zcx_error INTO DATA(lx_error).
         DATA(lv_exc_text)    = lx_error->get_text( ).
@@ -117,7 +117,7 @@ CLASS ltc_no_check IMPLEMENTATION.
         DATA(ls_bapiret) = zial_cl_log=>to_bapiret( ).
 
         RAISE EXCEPTION TYPE zcx_error
-          EXPORTING messages = VALUE #( ( ls_bapiret ) ).
+          EXPORTING it_messages = VALUE #( ( ls_bapiret ) ).
 
       CATCH zcx_error INTO DATA(lx_error).
         DATA(lv_exc_text)    = lx_error->get_text( ).
@@ -140,9 +140,9 @@ CLASS ltc_no_check IMPLEMENTATION.
         MESSAGE s002(sy) WITH '/SCWM/LGNUM' INTO DATA(lv_msgtx) ##NEEDED.
         DATA(ls_bapiret) = zial_cl_log=>to_bapiret( ).
 
-        DATA(lx_previous) = NEW zcx_error( message = ls_bapiret ).
+        DATA(lx_previous) = NEW zcx_error( is_message = ls_bapiret ).
         RAISE EXCEPTION TYPE zcx_error
-          EXPORTING previous = lx_previous.
+          EXPORTING io_previous = lx_previous.
 
       CATCH zcx_error INTO DATA(lx_error).
         DATA(lv_exc_text)    = lx_error->get_text( ).

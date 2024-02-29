@@ -1,108 +1,36 @@
 CLASS zcx_static_check DEFINITION
   PUBLIC
   INHERITING FROM cx_static_check ABSTRACT
-  CREATE PUBLIC.
+  CREATE PUBLIC
+  GLOBAL FRIENDS zcx_root.
 
   PUBLIC SECTION.
-    INTERFACES if_t100_dyn_msg.
-    INTERFACES if_t100_message.
-    INTERFACES zif_cx_root.
+    INTERFACES zcx_if_check_class.
 
-    TYPES de_bool TYPE n LENGTH 1.
-
-    CONSTANTS: BEGIN OF mc_log_enabled,
-                 undef TYPE de_bool VALUE 0,
-                 true  TYPE de_bool VALUE 1,
-                 false TYPE de_bool VALUE 2,
-               END OF mc_log_enabled.
-
-    CONSTANTS: BEGIN OF mc_obj_id,
-                 generic TYPE objectname VALUE 'OBJECT',
-               END OF mc_obj_id.
-
-    CLASS-METHODS is_root_log_enabled
-      RETURNING VALUE(rv_is_enabled) TYPE abap_bool.
+    ALIASES get_message  FOR zcx_if_check_class~get_message.
+    ALIASES get_messages FOR zcx_if_check_class~get_messages.
 
     METHODS constructor
-      IMPORTING textid     LIKE if_t100_message=>t100key OPTIONAL
-                !previous  LIKE previous                 OPTIONAL
-                obj_id     TYPE objectname               DEFAULT mc_obj_id-generic
-                !log       TYPE abap_bool                OPTIONAL
-                !message   TYPE bapiret2                 OPTIONAL
-                !messages  TYPE bapiret2_t               OPTIONAL
-                !subrc     TYPE sysubrc                  DEFAULT sy-subrc
-                input_data TYPE rsra_t_alert_definition  OPTIONAL.
-
-    METHODS get_message
-      RETURNING VALUE(rs_message) TYPE bapiret2.
-
-    METHODS get_messages
-      RETURNING VALUE(rt_messages) TYPE bapiret2_t.
-
-    METHODS get_obj_id
-      RETURNING VALUE(rv_obj_id) TYPE objectname.
-
-    METHODS get_input_data
-      RETURNING VALUE(rt_input_data) TYPE rsra_t_alert_definition.
-
-    METHODS set_message
-      IMPORTING is_message TYPE bapiret2.
-
-    METHODS set_messages
-      IMPORTING it_messages TYPE bapiret2_t.
-
-    METHODS log_exception_raised.
+      IMPORTING iv_textid     TYPE sotr_conc               OPTIONAL
+                is_t100key    TYPE scx_t100key             OPTIONAL
+                io_previous   LIKE previous                OPTIONAL
+                iv_obj_id     TYPE objectname              DEFAULT zcx_root=>mc_obj_id-generic
+                is_message    TYPE bapiret2                OPTIONAL
+                it_messages   TYPE bapiret2_t              OPTIONAL
+                iv_subrc      TYPE sysubrc                 DEFAULT sy-subrc
+                it_input_data TYPE rsra_t_alert_definition OPTIONAL.
 
     METHODS if_message~get_text REDEFINITION.
 
   PROTECTED SECTION.
-    CLASS-DATA log_root_enabled TYPE de_bool VALUE mc_log_enabled-false.
+    DATA mo_cx_root TYPE REF TO zcx_root.
 
-    CLASS-METHODS det_bool
-      IMPORTING iv_bool          TYPE abap_bool
-      RETURNING VALUE(rv_result) TYPE de_bool.
-
-    CLASS-METHODS det_cx_bool
-      IMPORTING iv_cx_bool       TYPE de_bool
-      RETURNING VALUE(rv_result) TYPE abap_bool.
-
-    DATA mv_obj_id            TYPE objectname.
-    DATA ms_message           TYPE bapiret2.
-    DATA mt_messages          TYPE bapiret2_t.
-    DATA mv_subrc             TYPE sysubrc.
-    DATA mt_input_data        TYPE rsra_t_alert_definition.
-
-    DATA log_instance_enabled TYPE de_bool VALUE mc_log_enabled-undef.
-
-    METHODS create_log_msgde
-      IMPORTING it_input_data   TYPE rsra_t_alert_definition
-      RETURNING VALUE(rt_msgde) TYPE rsra_t_alert_definition.
-
-    METHODS is_log_instance_enabled
-      RETURNING VALUE(rv_log_enabled) TYPE de_bool.
-
-    METHODS enable_log_instance
-      IMPORTING mc_log_enabled TYPE abap_bool.
-
-    METHODS is_log_enabled
-      RETURNING VALUE(rv_is_enabled) TYPE abap_bool.
-
-    METHODS reset_enable_log_instance.
-
+    "! <p class="shorttext synchronized">Custom code on construction</p>
+    "! <p>Customer-specific construction as redefinition of constructor is not
+    "! allowed and one would have to define the whole constructor over and
+    "! over again in each sub class. Thus wouldn't have to change all sub
+    "! classes if the signature of the constructor would change in ROOT class.</p>
     METHODS on_construction.
-
-    "! <p class="shorttext synchronized"></p>
-    "! <p><strong>Note:</strong>
-    "! Z-Exceptions support automatic logging if the new syntax RAISE EXCEPTION NEW
-    "! is being used or the exception object is being constructed either manually
-    "! before being thrown or in the catching block via INTO DATA(lo_exception). As
-    "! we want to handle all exception types (SAP and Non-SAP) the same way in regards
-    "! to logging,  automatic logging has been turned off (LOG_ROOT_ENABLED) and one
-    "! has to use ZIAL_CL_LOG=>GET( )->LOG_EXCEPTION( LO_EXCEPTION ). The parameter
-    "! should be turned on again if automatic logging is to be used or everyone only
-    "! works with RAISE EXCEPTION NEW as this always triggers the object constructor
-    "! and thus the logging.</p>
-    METHODS log_messages.
 
 ENDCLASS.
 
@@ -111,28 +39,16 @@ CLASS zcx_static_check IMPLEMENTATION.
 
   METHOD constructor ##ADT_SUPPRESS_GENERATION.
 
-    super->constructor( previous = previous ).
+    super->constructor( textid   = iv_textid
+                        previous = io_previous ).
 
-    CLEAR me->textid.
-    IF textid IS INITIAL.
-      if_t100_message~t100key = if_t100_message=>default_textid.
-    ELSE.
-      if_t100_message~t100key = textid.
-    ENDIF.
-
-    IF log IS SUPPLIED.
-      enable_log_instance( log ).
-    ELSE.
-      reset_enable_log_instance( ).
-    ENDIF.
-
-    mv_obj_id     = obj_id.
-    ms_message    = message.
-    mt_messages   = messages.
-    mv_subrc      = subrc.
-    mt_input_data = input_data.
-
-    log_messages( ).
+    mo_cx_root = NEW #( io_exception  = me
+                        is_t100key    = is_t100key
+                        iv_obj_id     = iv_obj_id
+                        is_message    = is_message
+                        it_messages   = it_messages
+                        iv_subrc      = iv_subrc
+                        it_input_data = it_input_data ).
 
     on_construction( ).
 
@@ -140,302 +56,28 @@ CLASS zcx_static_check IMPLEMENTATION.
 
 
   METHOD on_construction.
-
-    " Customer-specific construction as redefinition of constructor is not
-    " allowed and one would have to define the whole constructor over and
-    " over again in each sub class. Thus wouldn't have to change all sub
-    " classes if the signature of the constructor would change in ROOT class.
-
   ENDMETHOD.
 
 
-  METHOD create_log_msgde.
-
-    DATA(lv_line) = repeat( val = '-'
-                            occ = 80 ).
-    DATA(lo_abap_classdescr) = CAST cl_abap_classdescr( cl_abap_classdescr=>describe_by_object_ref( me ) ).
-    DATA(lv_class_name) = lo_abap_classdescr->get_relative_name( ).
-
-    APPEND LINES OF VALUE rsra_t_alert_definition( ( low  = lv_class_name ) ) TO rt_msgde.
-    APPEND VALUE #( low = lv_line ) TO rt_msgde.
-    APPEND LINES OF it_input_data TO rt_msgde.
-
-    " Callstack is being added via ZIAL_CL_LOG=>GET( )->LOG_EXCEPTION( lo_exception ).
-
+  METHOD zcx_if_check_class~get_message.
+    rs_message = mo_cx_root->get_message( ).
   ENDMETHOD.
 
 
-  METHOD enable_log_instance.
-
-    log_instance_enabled = det_bool( mc_log_enabled ).
-
-  ENDMETHOD.
-
-
-  METHOD is_log_instance_enabled.
-
-    rv_log_enabled = log_instance_enabled.
-
-  ENDMETHOD.
-
-
-  METHOD is_log_enabled.
-
-    CONSTANTS lc_log_instance_method TYPE string VALUE 'ZIF_CX_ROOT~IS_LOG_INSTANCE_ENABLED'.
-    CONSTANTS lc_log_class_method    TYPE string VALUE 'ZIF_CX_CLASS~IS_LOG_ENABLED'.
-    CONSTANTS lc_log_group_method    TYPE string VALUE 'ZIF_CX_GROUP~IS_LOG_ENABLED'.
-
-    DATA(lo_classdescr) = CAST cl_abap_classdescr( cl_abap_typedescr=>describe_by_object_ref( me ) ).
-    IF line_exists( lo_classdescr->methods[ name = lc_log_instance_method ] ).
-
-      DATA(lv_log_instance_enabled) = VALUE de_bool( ).
-      CALL METHOD (lc_log_instance_method)
-        RECEIVING rv_is_enabled = lv_log_instance_enabled.
-      CASE lv_log_instance_enabled.
-        WHEN mc_log_enabled-true
-          OR mc_log_enabled-false.
-          rv_is_enabled = det_cx_bool( lv_log_instance_enabled ).
-          RETURN.
-
-      ENDCASE.
-
-    ENDIF.
-
-    IF line_exists( lo_classdescr->methods[ name = lc_log_class_method ] ).
-
-      DATA(lv_class_name) = lo_classdescr->absolute_name.
-      DATA(lv_log_class_enabled) = VALUE de_bool( ).
-      CALL METHOD (lv_class_name)=>(lc_log_class_method)
-        RECEIVING rv_is_enabled = lv_log_class_enabled.
-      CASE lv_log_class_enabled.
-        WHEN mc_log_enabled-true
-          OR mc_log_enabled-false.
-          rv_is_enabled = det_cx_bool( lv_log_class_enabled ).
-          RETURN.
-
-      ENDCASE.
-
-    ENDIF.
-
-    DATA(lo_group_classdescr) = lo_classdescr->get_super_class_type( ).
-    IF     lo_group_classdescr IS BOUND
-       AND line_exists( lo_group_classdescr->methods[ name = lc_log_group_method ] ).
-
-      DATA(lv_group_name) = lo_group_classdescr->absolute_name.
-      DATA(lv_log_group_enabled) = VALUE de_bool( ).
-      CALL METHOD (lv_group_name)=>(lc_log_group_method)
-        RECEIVING rv_is_enabled = lv_log_group_enabled.
-      CASE lv_log_group_enabled.
-        WHEN mc_log_enabled-true
-          OR mc_log_enabled-false.
-          rv_is_enabled = det_cx_bool( lv_log_group_enabled ).
-          RETURN.
-
-      ENDCASE.
-
-    ENDIF.
-
-    rv_is_enabled = is_root_log_enabled( ).
-
-  ENDMETHOD.
-
-
-  METHOD log_exception_raised.
-
-    DATA(lo_abap_classdescr) = CAST cl_abap_classdescr( cl_abap_classdescr=>describe_by_object_ref( me ) ).
-    DATA(lv_class_name) = lo_abap_classdescr->get_relative_name( ).
-
-    DATA(lt_components) = zial_cl_log=>get_components_from_msgde( mt_input_data ).
-    MESSAGE e001(zial_exc_mgmt) WITH lv_class_name lt_components mv_subrc INTO DATA(lv_msg) ##NEEDED.
-    DATA(lt_msgde) = create_log_msgde( mt_input_data ).
-    zial_cl_log=>get( )->log_message( lt_msgde ).
-
-  ENDMETHOD.
-
-
-  METHOD log_messages.
-
-    CHECK is_log_enabled( ) EQ abap_true.
-
-    log_exception_raised( ).
-
-    DATA(lt_bapiret) = get_messages( ).
-    zial_cl_log=>get( )->log_bapiret( lt_bapiret ).
-
-  ENDMETHOD.
-
-
-  METHOD reset_enable_log_instance.
-    log_instance_enabled = mc_log_enabled-undef.
+  METHOD zcx_if_check_class~get_messages.
+    rt_messages = mo_cx_root->get_messages( ).
   ENDMETHOD.
 
 
   METHOD if_message~get_text.
 
-    CLEAR: sy-msgid,
-           sy-msgno,
-           sy-msgty,
-           sy-msgv1,
-           sy-msgv2,
-           sy-msgv3,
-           sy-msgv4.
-
-    IF ms_message IS NOT INITIAL.
-      result = zial_cl_log=>to_string( is_bapiret = ms_message ).
-    ELSEIF mt_messages IS NOT INITIAL.
-      result = zial_cl_log=>to_string( is_bapiret = mt_messages[ 1 ] ).
-    ELSE.
-      result = super->get_text( ).
-    ENDIF.
-
-    IF     if_t100_message~t100key EQ if_t100_message~default_textid
-       AND previous                IS BOUND.
-      result = previous->get_text( ).
-    ENDIF.
-
-  ENDMETHOD.
-
-
-  METHOD get_message.
-
-    IF ms_message IS INITIAL.
-      IF mt_messages IS NOT INITIAL.
-        ms_message = VALUE #( mt_messages[ 1 ] OPTIONAL ).
-      ELSEIF if_t100_message~t100key EQ if_t100_message~default_textid
-         AND previous                IS BOUND
-         AND previous                IS INSTANCE OF zcx_static_check.
-        ms_message = CAST zcx_static_check( previous )->get_message( ).
-      ELSE.
-        ms_message = VALUE #( id         = if_t100_message~t100key-msgid
-                              number     = if_t100_message~t100key-msgno
-                              type       = if_t100_dyn_msg~msgty
-                              message_v1 = if_t100_dyn_msg~msgv1
-                              message_v2 = if_t100_dyn_msg~msgv2
-                              message_v3 = if_t100_dyn_msg~msgv3
-                              message_v4 = if_t100_dyn_msg~msgv4 ).
-
-      ENDIF.
-    ENDIF.
-
-    IF ms_message-system IS INITIAL.
-      CALL FUNCTION 'OWN_LOGICAL_SYSTEM_GET_STABLE'
-        IMPORTING  own_logical_system = ms_message-system
-        EXCEPTIONS OTHERS             = 0.
-    ENDIF.
-
-    IF ms_message-message IS INITIAL.
-      ms_message-message = zial_cl_log=>to_string( iv_msgid = ms_message-id
-                                                   iv_msgty = ms_message-type
-                                                   iv_msgno = ms_message-number
-                                                   iv_msgv1 = ms_message-message_v1
-                                                   iv_msgv2 = ms_message-message_v2
-                                                   iv_msgv3 = ms_message-message_v3
-                                                   iv_msgv4 = ms_message-message_v4 ).
-    ENDIF.
-
-    rs_message = ms_message.
-
-  ENDMETHOD.
-
-
-  METHOD set_message.
-
-    ms_message = is_message.
-
-  ENDMETHOD.
-
-
-  METHOD get_messages.
-
-    IF previous IS BOUND.
-      IF previous IS INSTANCE OF zcx_static_check.
-        INSERT LINES OF CAST zcx_static_check( previous )->get_messages( ) INTO TABLE mt_messages.
-      ELSE.
-        INSERT zial_cl_log=>to_bapiret( iv_msgtx = CONV #( previous->get_text( ) )
-                                        iv_msgty = 'E' ) INTO TABLE mt_messages.
-      ENDIF.
-    ENDIF.
-
-    IF         ms_message IS NOT INITIAL
-       AND NOT line_exists( mt_messages[ table_line = ms_message ] ).
-      INSERT ms_message INTO TABLE mt_messages.
-    ENDIF.
-
-    rt_messages = mt_messages.
-
-  ENDMETHOD.
-
-
-  METHOD set_messages.
-
-    mt_messages = it_messages.
-
-  ENDMETHOD.
-
-
-  METHOD get_obj_id.
-
-    rv_obj_id = mv_obj_id.
-
-  ENDMETHOD.
-
-
-  METHOD get_input_data.
-
-    rt_input_data = mt_input_data.
-
-  ENDMETHOD.
-
-
-  METHOD det_bool.
-
-    CASE iv_bool.
+    CASE mo_cx_root->get_call_on_super( ).
       WHEN abap_true.
-        rv_result = mc_log_enabled-true.
+        result = super->if_message~get_text( ).
+        mo_cx_root->reset_call_on_super( ).
 
       WHEN abap_false.
-        rv_result = mc_log_enabled-false.
-
-    ENDCASE.
-
-  ENDMETHOD.
-
-
-  METHOD det_cx_bool.
-
-    CASE iv_cx_bool.
-      WHEN mc_log_enabled-true.
-        rv_result = abap_true.
-
-      WHEN mc_log_enabled-false.
-        rv_result = abap_false.
-
-    ENDCASE.
-
-  ENDMETHOD.
-
-
-  METHOD zif_cx_root~enable_log.
-
-    log_root_enabled = det_bool( iv_enable ).
-
-  ENDMETHOD.
-
-
-  METHOD zif_cx_root~is_log_enabled.
-
-    rv_is_enabled = log_root_enabled.
-
-  ENDMETHOD.
-
-
-  METHOD is_root_log_enabled.
-
-    CASE log_root_enabled.
-      WHEN mc_log_enabled-true
-        OR mc_log_enabled-false.
-        rv_is_enabled = det_cx_bool( log_root_enabled ).
-        RETURN.
+        result = mo_cx_root->if_message~get_text( ).
 
     ENDCASE.
 
