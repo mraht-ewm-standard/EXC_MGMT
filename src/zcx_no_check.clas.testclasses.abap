@@ -1,1 +1,1 @@
-" Tests in ZCX_STATIC_CHECK
+" Tests in ZCX_ROOT

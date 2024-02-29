@@ -9,6 +9,8 @@ CLASS zcx_no_check DEFINITION
 
     ALIASES get_message  FOR zcx_if_check_class~get_message.
     ALIASES get_messages FOR zcx_if_check_class~get_messages.
+    ALIASES log          FOR zcx_if_check_class~log.
+    ALIASES log_info     FOR zcx_if_check_class~log_info.
 
     METHODS constructor
       IMPORTING iv_textid     TYPE sotr_conc               OPTIONAL
@@ -73,14 +75,24 @@ CLASS zcx_no_check IMPLEMENTATION.
 
     CASE mo_cx_root->get_call_on_super( ).
       WHEN abap_true.
-        result = super->if_message~get_text( ).
+        result = super->get_text( ).
         mo_cx_root->reset_call_on_super( ).
 
       WHEN abap_false.
-        result = mo_cx_root->if_message~get_text( ).
+        result = mo_cx_root->get_text( ).
 
     ENDCASE.
 
+  ENDMETHOD.
+
+
+  METHOD zcx_if_check_class~log.
+    mo_cx_root->log( ).
+  ENDMETHOD.
+
+
+  METHOD zcx_if_check_class~log_info.
+    mo_cx_root->log_info( ).
   ENDMETHOD.
 
 ENDCLASS.
