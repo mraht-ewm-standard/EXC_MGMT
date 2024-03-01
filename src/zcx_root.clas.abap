@@ -227,10 +227,7 @@ CLASS zcx_root IMPLEMENTATION.
 
   METHOD get_text.
 
-    DATA(ls_message) = get_message( ).
-    MESSAGE ID ls_message-id TYPE ls_message-type NUMBER ls_message-number
-      WITH ls_message-message_v1 ls_message-message_v2
-           ls_message-message_v3 ls_message-message_v4 INTO rv_result.
+    rv_result = get_message( )-message.
 
   ENDMETHOD.
 
