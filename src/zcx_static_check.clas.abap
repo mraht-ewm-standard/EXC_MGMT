@@ -7,20 +7,26 @@ CLASS zcx_static_check DEFINITION
   PUBLIC SECTION.
     INTERFACES zcx_if_check_class.
 
+    ALIASES input_data   FOR zcx_if_check_class~input_data.
+    ALIASES message      FOR zcx_if_check_class~message.
+    ALIASES messages     FOR zcx_if_check_class~messages.
+    ALIASES obj_id       FOR zcx_if_check_class~obj_id.
+    ALIASES subrc        FOR zcx_if_check_class~subrc.
+
     ALIASES get_message  FOR zcx_if_check_class~get_message.
     ALIASES get_messages FOR zcx_if_check_class~get_messages.
     ALIASES log          FOR zcx_if_check_class~log.
     ALIASES log_info     FOR zcx_if_check_class~log_info.
 
     METHODS constructor
-      IMPORTING iv_textid     TYPE sotr_conc               OPTIONAL
-                is_t100key    TYPE scx_t100key             OPTIONAL
-                io_previous   LIKE previous                OPTIONAL
-                iv_obj_id     TYPE objectname              DEFAULT zcx_root=>mc_obj_id-generic
-                is_message    TYPE bapiret2                OPTIONAL
-                it_messages   TYPE bapiret2_t              OPTIONAL
-                iv_subrc      TYPE sysubrc                 DEFAULT sy-subrc
-                it_input_data TYPE rsra_t_alert_definition OPTIONAL.
+      IMPORTING textid     TYPE sotr_conc               OPTIONAL
+                t100key    TYPE scx_t100key             OPTIONAL
+                !previous  LIKE previous                OPTIONAL
+                obj_id     TYPE objectname              DEFAULT zcx_root=>mc_obj_id-generic
+                !message   TYPE bapiret2                OPTIONAL
+                !messages  TYPE bapiret2_t              OPTIONAL
+                !subrc     TYPE sysubrc                 DEFAULT sy-subrc
+                input_data TYPE rsra_t_alert_definition OPTIONAL.
 
     METHODS if_message~get_text REDEFINITION.
 
@@ -41,16 +47,16 @@ CLASS zcx_static_check IMPLEMENTATION.
 
   METHOD constructor ##ADT_SUPPRESS_GENERATION.
 
-    super->constructor( textid   = iv_textid
-                        previous = io_previous ).
+    super->constructor( textid   = textid
+                        previous = previous ).
 
     mo_cx_root = NEW #( io_exception  = me
-                        is_t100key    = is_t100key
-                        iv_obj_id     = iv_obj_id
-                        is_message    = is_message
-                        it_messages   = it_messages
-                        iv_subrc      = iv_subrc
-                        it_input_data = it_input_data ).
+                        is_t100key    = t100key
+                        iv_obj_id     = obj_id
+                        is_message    = message
+                        it_messages   = messages
+                        iv_subrc      = subrc
+                        it_input_data = input_data ).
 
     on_construction( ).
 
