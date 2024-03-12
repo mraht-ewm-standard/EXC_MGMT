@@ -4,6 +4,8 @@ CLASS zcx_missing_parameter DEFINITION
   INHERITING FROM zcx_no_check FINAL
   CREATE PUBLIC.
 
+  PROTECTED SECTION.
+
 ENDCLASS.
 
 
