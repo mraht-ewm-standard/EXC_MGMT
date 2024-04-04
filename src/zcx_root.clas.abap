@@ -32,6 +32,11 @@ CLASS zcx_root DEFINITION
     METHODS reset_call_on_super.
     METHODS register_call_on_super.
 
+    METHODS display_message.
+
+    METHODS is_dflt_message
+      RETURNING VALUE(rv_result) TYPE abap_bool.
+
   PROTECTED SECTION.
     "! Turn on/off automatic logging
     CLASS-DATA is_auto_log_enabled TYPE abap_bool VALUE abap_false.
@@ -261,6 +266,27 @@ CLASS zcx_root IMPLEMENTATION.
 
   METHOD reset_call_on_super.
     call_on_super = abap_false.
+  ENDMETHOD.
+
+
+  METHOD display_message.
+    DATA(ls_message) = get_message( ).
+    MESSAGE ls_message-message TYPE 'S' DISPLAY LIKE ls_message-type.
+  ENDMETHOD.
+
+
+  METHOD is_dflt_message.
+
+    DATA(ls_message) = get_message( ).
+    MESSAGE ID exception->if_t100_message~default_textid-msgid
+            TYPE 'E' NUMBER exception->if_t100_message~default_textid-msgno INTO DATA(lv_msgtx).
+
+    CHECK ls_message-message EQ lv_msgtx
+       OR (     ls_message-id     EQ exception->if_t100_message~default_textid-msgid
+            AND ls_message-number EQ exception->if_t100_message~default_textid-msgno ).
+
+    rv_result = abap_true.
+
   ENDMETHOD.
 
 ENDCLASS.

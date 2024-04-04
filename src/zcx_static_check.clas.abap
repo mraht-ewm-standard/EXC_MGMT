@@ -30,6 +30,11 @@ CLASS zcx_static_check DEFINITION
 
     METHODS if_message~get_text REDEFINITION.
 
+    METHODS display_message.
+
+    METHODS is_dflt_message
+      RETURNING VALUE(rv_result) TYPE abap_bool.
+
   PROTECTED SECTION.
     DATA mo_cx_root TYPE REF TO zcx_root.
 
@@ -99,6 +104,16 @@ CLASS zcx_static_check IMPLEMENTATION.
 
   METHOD zcx_if_check_class~log_info.
     mo_cx_root->log_info( ).
+  ENDMETHOD.
+
+
+  METHOD display_message.
+    mo_cx_root->display_message( ).
+  ENDMETHOD.
+
+
+  METHOD is_dflt_message.
+    rv_result = mo_cx_root->is_dflt_message( ).
   ENDMETHOD.
 
 ENDCLASS.
