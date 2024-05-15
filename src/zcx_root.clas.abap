@@ -54,7 +54,7 @@ CLASS zcx_root DEFINITION
     "! before being thrown or in the catching block via INTO DATA(lo_exception). As
     "! we want to handle all exception types (SAP and Non-SAP) the same way in regards
     "! to logging,  automatic logging has been turned off (LOG_ROOT_ENABLED) and one
-    "! has to use ZIAL_CL_LOG=>GET( )->LOG_EXCEPTION( LO_EXCEPTION ). The parameter
+    "! has to use ZIAL_CL_LOG=&gt;GET( )-&gt;LOG_EXCEPTION( LO_EXCEPTION ). The parameter
     "! should be turned on again if automatic logging is to be used or everyone only
     "! works with RAISE EXCEPTION NEW as this always triggers the object constructor
     "! and thus the logging.</p>
@@ -65,6 +65,7 @@ CLASS zcx_root DEFINITION
 
     METHODS get_text
       RETURNING VALUE(rv_result) TYPE string.
+
 ENDCLASS.
 
 
@@ -131,6 +132,8 @@ CLASS zcx_root IMPLEMENTATION.
     WHILE exception->message IS INITIAL.
 
       DATA(lv_index) = sy-index.
+
+      DATA(lt_messages) = VALUE bapiret2_t( ).
       CASE lv_index.
         WHEN 1.
           CHECK exception->messages IS NOT INITIAL.
@@ -143,14 +146,15 @@ CLASS zcx_root IMPLEMENTATION.
                                                IMPORTING result = DATA(lv_msgtx) ).
           cl_message_helper=>replace_text_params( EXPORTING obj    = exception
                                                   CHANGING  result = lv_msgtx ).
-          exception->message = zial_cl_log=>to_bapiret( iv_msgty = 'E'
-                                                        iv_msgtx = CONV #( lv_msgtx ) ).
+          lt_messages = zial_cl_log=>to_bapiret( iv_msgty = 'E'
+                                                 iv_msgtx = CONV #( lv_msgtx ) ).
+          exception->message = VALUE #( lt_messages[ 1 ] OPTIONAL ).
 
         WHEN 3.
           CHECK exception->if_t100_message~t100key IS NOT INITIAL
             AND exception->if_t100_message~t100key NE exception->if_t100_message~default_textid.
 
-          DATA(ls_message) = cl_message_helper=>get_t100_for_object( obj = exception ).
+          DATA(ls_message) = zcl_message_helper=>get_t100_for_object( obj = exception ).
           IF exception->if_t100_dyn_msg~msgty IS NOT INITIAL.
             ls_message-msgty = exception->if_t100_dyn_msg~msgty.
           ENDIF.
@@ -167,13 +171,14 @@ CLASS zcx_root IMPLEMENTATION.
             ls_message-msgv4 = exception->if_t100_dyn_msg~msgv4.
           ENDIF.
 
-          exception->message = zial_cl_log=>to_bapiret( iv_msgid = ls_message-msgid
-                                                        iv_msgty = ls_message-msgty
-                                                        iv_msgno = ls_message-msgno
-                                                        iv_msgv1 = ls_message-msgv1
-                                                        iv_msgv2 = ls_message-msgv2
-                                                        iv_msgv3 = ls_message-msgv3
-                                                        iv_msgv4 = ls_message-msgv4 ).
+          lt_messages = zial_cl_log=>to_bapiret( iv_msgid = ls_message-msgid
+                                                 iv_msgty = ls_message-msgty
+                                                 iv_msgno = ls_message-msgno
+                                                 iv_msgv1 = ls_message-msgv1
+                                                 iv_msgv2 = ls_message-msgv2
+                                                 iv_msgv3 = ls_message-msgv3
+                                                 iv_msgv4 = ls_message-msgv4 ).
+          exception->message = VALUE #( lt_messages[ 1 ] OPTIONAL ).
 
         WHEN 4.
           CHECK CAST cx_root( exception )->previous IS BOUND.
@@ -181,14 +186,16 @@ CLASS zcx_root IMPLEMENTATION.
             exception->message = CAST zcx_if_check_class( lo_exception_as_root->previous )->get_message( ).
           ELSE.
             lv_msgtx = lo_exception_as_root->previous->get_text( ).
-            exception->message = zial_cl_log=>to_bapiret( iv_msgty = 'E'
-                                                          iv_msgtx = CONV #( lv_msgtx ) ).
+            lt_messages = zial_cl_log=>to_bapiret( iv_msgty = 'E'
+                                                   iv_msgtx = CONV #( lv_msgtx ) ).
+            exception->message = VALUE #( lt_messages[ 1 ] OPTIONAL ).
           ENDIF.
 
         WHEN OTHERS.
           lv_msgtx = get_text_by_super( ).
-          exception->message = zial_cl_log=>to_bapiret( iv_msgty = 'E'
-                                                        iv_msgtx = CONV #( lv_msgtx ) ).
+          lt_messages = zial_cl_log=>to_bapiret( iv_msgty = 'E'
+                                                 iv_msgtx = CONV #( lv_msgtx ) ).
+          exception->message = VALUE #( lt_messages[ 1 ] OPTIONAL ).
           EXIT.
 
       ENDCASE.
@@ -208,8 +215,8 @@ CLASS zcx_root IMPLEMENTATION.
       IF lo_exception_as_root->previous IS INSTANCE OF zcx_if_check_class.
         INSERT LINES OF CAST zcx_if_check_class( lo_exception_as_root->previous )->get_messages( ) INTO TABLE rt_messages.
       ELSE.
-        INSERT zial_cl_log=>to_bapiret( iv_msgtx = CONV #( lo_exception_as_root->previous->get_text( ) )
-                                        iv_msgty = 'E' ) INTO TABLE rt_messages.
+        INSERT LINES OF zial_cl_log=>to_bapiret( iv_msgtx = CONV #( lo_exception_as_root->previous->get_text( ) )
+                                                 iv_msgty = 'E' ) INTO TABLE rt_messages.
       ENDIF.
     ENDIF.
 

@@ -75,12 +75,13 @@ CLASS ltc_root IMPLEMENTATION.
 
     TRY.
         MESSAGE s499(sy) WITH 'LGNUM' 'HUID' 'RSRC' 'NLPLA' INTO DATA(lv_exp_msgtx) ##NEEDED.
-        DATA(ls_exp_message) = zial_cl_log=>to_bapiret( ).
+        DATA(lt_exp_messages) = zial_cl_log=>to_bapiret( ).
+        DATA(ls_exp_message) = VALUE #( lt_exp_messages[ 1 ] OPTIONAL ).
 
         RAISE EXCEPTION TYPE zcx_error
-          MESSAGE s499(sy) WITH 'LGNUM' 'HUID' 'RSRC' 'NLPLA'
-          EXPORTING input_data = VALUE #( ( fnam = 'DATA_TYPE'
-                                            low  = 'LGNUM' ) ).
+              MESSAGE s499(sy) WITH 'LGNUM' 'HUID' 'RSRC' 'NLPLA'
+              EXPORTING input_data = VALUE #( ( fnam = 'DATA_TYPE'
+                                                low  = 'LGNUM' ) ).
 
       CATCH zcx_error INTO DATA(lx_error).
         DATA(lv_act_msgtx) = lx_error->get_text( ).
@@ -101,7 +102,8 @@ CLASS ltc_root IMPLEMENTATION.
 
     TRY.
         MESSAGE s499(sy) WITH 'LGNUM' INTO DATA(lv_exp_msgtx) ##NEEDED.
-        DATA(ls_exp_message) = zial_cl_log=>to_bapiret( ).
+        DATA(lt_exp_messages) = zial_cl_log=>to_bapiret( ).
+        DATA(ls_exp_message) = VALUE #( lt_exp_messages[ 1 ] OPTIONAL ).
 
         RAISE EXCEPTION TYPE zcx_error
           EXPORTING message = ls_exp_message.
@@ -125,7 +127,8 @@ CLASS ltc_root IMPLEMENTATION.
 
     TRY.
         MESSAGE s499(sy) WITH 'LGNUM' INTO DATA(lv_exp_msgtx) ##NEEDED.
-        DATA(ls_exp_message) = zial_cl_log=>to_bapiret( ).
+        DATA(lt_exp_messages) = zial_cl_log=>to_bapiret( ).
+        DATA(ls_exp_message) = VALUE #( lt_exp_messages[ 1 ] OPTIONAL ).
 
         RAISE EXCEPTION TYPE zcx_error
           EXPORTING messages = VALUE #( ( ls_exp_message ) ).
@@ -149,7 +152,8 @@ CLASS ltc_root IMPLEMENTATION.
 
     TRY.
         MESSAGE s499(sy) WITH 'LGNUM' INTO DATA(lv_exp_msgtx) ##NEEDED.
-        DATA(ls_exp_message) = zial_cl_log=>to_bapiret( ).
+        DATA(lt_exp_messages) = zial_cl_log=>to_bapiret( ).
+        DATA(ls_exp_message) = VALUE #( lt_exp_messages[ 1 ] OPTIONAL ).
 
         DATA(lx_previous) = NEW zcx_error( message = ls_exp_message ).
         RAISE EXCEPTION TYPE zcx_error
@@ -173,7 +177,7 @@ CLASS ltc_root IMPLEMENTATION.
   METHOD t0005.
 
     TRY.
-        DATA(lv_exp_msgtx) = |The database table 'TOKEN' is unknown|.
+        DATA(lv_exp_msgtx) = |The database table '&TOKEN&' is unknown|.
 
         RAISE EXCEPTION TYPE zcx_error
           EXPORTING textid = cx_sy_dynamic_osql_semantics=>unknown_table_name.
@@ -210,11 +214,11 @@ CLASS ltc_root IMPLEMENTATION.
   METHOD t0007.
 
     TRY.
-        MESSAGE e449(sy) WITH 'LGNUM' INTO DATA(lv_exp_msgtx) ##NEEDED.
+        MESSAGE e499(sy) WITH 'LGNUM' INTO DATA(lv_exp_msgtx) ##NEEDED.
 
         RAISE EXCEPTION TYPE zcx_error
           EXPORTING t100key = VALUE #( msgid = 'SY'
-                                       msgno = '449'
+                                       msgno = '499'
                                        attr1 = 'ZCX_IF_CHECK_CLASS~OBJ_ID' )
                     obj_id  = 'LGNUM'.
 
@@ -233,19 +237,20 @@ CLASS ltc_root IMPLEMENTATION.
 
     TRY.
         " T100KEY
-        MESSAGE s449(sy) WITH 'LGNUM1' INTO DATA(lv_exp_msgtx) ##NEEDED.
-        DATA(ls_exp_message) = zial_cl_log=>to_bapiret( ).
+        MESSAGE s499(sy) WITH 'LGNUM1' INTO DATA(lv_exp_msgtx) ##NEEDED.
+        DATA(lt_exp_messages) = zial_cl_log=>to_bapiret( ).
 
         RAISE EXCEPTION TYPE zcx_error
-          MESSAGE s449(sy) WITH 'LGNUM1'
-          EXPORTING input_data = VALUE #( ( fnam = 'DATA_TYPE'
-                                            low  = 'LGNUM' ) ).
+              MESSAGE s499(sy) WITH 'LGNUM1'
+              EXPORTING input_data = VALUE #( ( fnam = 'DATA_TYPE'
+                                                low  = 'LGNUM' ) ).
 
       CATCH cx_root INTO DATA(lx_error_1).
         TRY.
             " MESSAGE
-            MESSAGE s449(sy) WITH 'LGNUM2' INTO lv_exp_msgtx ##NEEDED.
-            ls_exp_message = zial_cl_log=>to_bapiret( ).
+            MESSAGE s499(sy) WITH 'LGNUM2' INTO lv_exp_msgtx ##NEEDED.
+            lt_exp_messages = zial_cl_log=>to_bapiret( ).
+            DATA(ls_exp_message) = VALUE #( lt_exp_messages[ 1 ] OPTIONAL ).
 
             RAISE EXCEPTION TYPE zcx_error
               EXPORTING previous = lx_error_1
@@ -254,18 +259,18 @@ CLASS ltc_root IMPLEMENTATION.
           CATCH zcx_error INTO DATA(lx_error_2).
             TRY.
                 " MESSAGES
-                MESSAGE s449(sy) WITH 'LGNUM3' INTO lv_exp_msgtx ##NEEDED.
-                ls_exp_message = zial_cl_log=>to_bapiret( ).
+                MESSAGE s499(sy) WITH 'LGNUM3' INTO lv_exp_msgtx ##NEEDED.
+                lt_exp_messages = zial_cl_log=>to_bapiret( ).
 
                 RAISE EXCEPTION TYPE zcx_error
                   EXPORTING previous = lx_error_2
-                            messages = VALUE #( ( ls_exp_message ) ).
+                            messages = lt_exp_messages.
 
               CATCH zcx_static_check INTO DATA(lx_error_3).
                 TRY.
                     " TEXTID
                     lv_exp_msgtx = |The database table 'TOKEN' is unknown|.
-                    ls_exp_message = zial_cl_log=>to_bapiret( iv_msgtx = CONV #( lv_exp_msgtx ) ).
+                    lt_exp_messages = zial_cl_log=>to_bapiret( iv_msgtx = CONV #( lv_exp_msgtx ) ).
 
                     RAISE EXCEPTION TYPE zcx_error
                       EXPORTING previous = lx_error_3
@@ -274,13 +279,14 @@ CLASS ltc_root IMPLEMENTATION.
                   CATCH cx_root INTO DATA(lx_error_4).
                     TRY.
                         " T100KEY
-                        MESSAGE e449(sy) WITH 'LGNUM5' INTO lv_exp_msgtx ##NEEDED.
-                        ls_exp_message = zial_cl_log=>to_bapiret( ).
+                        MESSAGE e499(sy) WITH 'LGNUM5' INTO lv_exp_msgtx ##NEEDED.
+                        lt_exp_messages = zial_cl_log=>to_bapiret( ).
+                        ls_exp_message = VALUE #( lt_exp_messages[ 1 ] OPTIONAL ).
 
                         RAISE EXCEPTION TYPE zcx_error
                           EXPORTING previous = lx_error_4
                                     t100key  = VALUE #( msgid = 'SY'
-                                                        msgno = '449'
+                                                        msgno = '499'
                                                         attr1 = 'ZCX_IF_CHECK_CLASS~OBJ_ID' )
                                     obj_id   = 'LGNUM5'.
 
@@ -370,8 +376,9 @@ CLASS ltc_root IMPLEMENTATION.
   METHOD t0011.
 
     TRY.
-        MESSAGE s449(sy) WITH 'LGNUM' INTO DATA(lv_exp_msgtx) ##NEEDED.
-        DATA(ls_exp_message) = zial_cl_log=>to_bapiret( ).
+        MESSAGE s499(sy) WITH 'LGNUM' INTO DATA(lv_exp_msgtx) ##NEEDED.
+        DATA(lt_exp_messages) = zial_cl_log=>to_bapiret( ).
+        DATA(ls_exp_message) = VALUE #( lt_exp_messages[ 1 ] OPTIONAL ).
 
         RAISE EXCEPTION TYPE zcx_error
           EXPORTING message = ls_exp_message.
@@ -398,8 +405,8 @@ CLASS ltc_root IMPLEMENTATION.
 
     TRY.
         MESSAGE e499(sy) WITH 'ABCD is not a valid integer.' INTO DATA(lv_exp_msgtx) ##NEEDED.
-        DATA(ls_exp_message) = zial_cl_log=>to_bapiret( ).
-        DATA(lt_exp_messages) = VALUE bapiret2_t( ( ls_exp_message ) ).
+        DATA(lt_exp_messages) = zial_cl_log=>to_bapiret( ).
+        DATA(ls_exp_message) = VALUE #( lt_exp_messages[ 1 ] OPTIONAL ).
 
         DATA(lx_previous) = NEW cx_abap_not_an_integer( value = 'ABCD' ).
         RAISE EXCEPTION TYPE zcx_error
