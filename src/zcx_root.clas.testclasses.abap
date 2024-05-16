@@ -34,6 +34,8 @@ CLASS ltc_root DEFINITION FINAL
     METHODS t0011 FOR TESTING.
     METHODS t0012 FOR TESTING.
     METHODS t0013 FOR TESTING.
+    METHODS t0014 FOR TESTING.
+    METHODS t0015 FOR TESTING.
 
 ENDCLASS.
 
@@ -177,7 +179,7 @@ CLASS ltc_root IMPLEMENTATION.
   METHOD t0005.
 
     TRY.
-        DATA(lv_exp_msgtx) = |The database table '&TOKEN&' is unknown|.
+        DATA(lv_exp_msgtx) = |The database table 'TOKEN' is unknown|.
 
         RAISE EXCEPTION TYPE zcx_error
           EXPORTING textid = cx_sy_dynamic_osql_semantics=>unknown_table_name.
@@ -196,7 +198,7 @@ CLASS ltc_root IMPLEMENTATION.
   METHOD t0006.
 
     TRY.
-        DATA(lv_exp_msgtx) = |An exception was raised|.
+        DATA(lv_exp_msgtx) = |Exception ZCX_ERROR was raised|.
 
         RAISE EXCEPTION TYPE zcx_error.
 
@@ -334,13 +336,14 @@ CLASS ltc_root IMPLEMENTATION.
       CATCH zcx_error INTO DATA(lx_error).
     ENDTRY.
 
-    DATA(lo_root) = NEW zcx_root( io_exception  = lx_error
-                                  is_t100key    = lx_error->if_t100_message~t100key
-                                  iv_obj_id     = lx_error->zcx_if_check_class~obj_id
-                                  is_message    = lx_error->zcx_if_check_class~message
-                                  it_messages   = lx_error->zcx_if_check_class~messages
-                                  iv_subrc      = lx_error->zcx_if_check_class~subrc
-                                  it_input_data = lx_error->zcx_if_check_class~input_data ).
+    DATA(lo_root) = NEW zcx_root( io_exception        = lx_error
+                                  is_t100key          = lx_error->if_t100_message~t100key
+                                  iv_obj_id           = lx_error->zcx_if_check_class~obj_id
+                                  is_message          = lx_error->zcx_if_check_class~message
+                                  it_messages         = lx_error->zcx_if_check_class~messages
+                                  iv_subrc            = lx_error->zcx_if_check_class~subrc
+                                  it_input_data       = lx_error->zcx_if_check_class~input_data
+                                  is_auto_log_enabled = lx_error->zcx_if_check_class~is_auto_log_enabled ).
     DATA(lt_msgde) = lo_root->create_log_msgde( ).
 
     cl_abap_unit_assert=>assert_equals( exp = 3
@@ -358,13 +361,14 @@ CLASS ltc_root IMPLEMENTATION.
       CATCH zcx_error INTO DATA(lx_error).
     ENDTRY.
 
-    DATA(lo_root) = NEW zcx_root( io_exception  = lx_error
-                                  is_t100key    = lx_error->if_t100_message~t100key
-                                  iv_obj_id     = lx_error->zcx_if_check_class~obj_id
-                                  is_message    = lx_error->zcx_if_check_class~message
-                                  it_messages   = lx_error->zcx_if_check_class~messages
-                                  iv_subrc      = lx_error->zcx_if_check_class~subrc
-                                  it_input_data = lx_error->zcx_if_check_class~input_data ).
+    DATA(lo_root) = NEW zcx_root( io_exception        = lx_error
+                                  is_t100key          = lx_error->if_t100_message~t100key
+                                  iv_obj_id           = lx_error->zcx_if_check_class~obj_id
+                                  is_message          = lx_error->zcx_if_check_class~message
+                                  it_messages         = lx_error->zcx_if_check_class~messages
+                                  iv_subrc            = lx_error->zcx_if_check_class~subrc
+                                  it_input_data       = lx_error->zcx_if_check_class~input_data
+                                  is_auto_log_enabled = lx_error->zcx_if_check_class~is_auto_log_enabled ).
     lo_root->log_info( ).
 
     DATA(lt_messages) = zial_cl_log=>get( )->get_messages( ).
@@ -386,13 +390,14 @@ CLASS ltc_root IMPLEMENTATION.
       CATCH zcx_error INTO DATA(lx_error).
     ENDTRY.
 
-    DATA(lo_root) = NEW zcx_root( io_exception  = lx_error
-                                  is_t100key    = lx_error->if_t100_message~t100key
-                                  iv_obj_id     = lx_error->zcx_if_check_class~obj_id
-                                  is_message    = lx_error->zcx_if_check_class~message
-                                  it_messages   = lx_error->zcx_if_check_class~messages
-                                  iv_subrc      = lx_error->zcx_if_check_class~subrc
-                                  it_input_data = lx_error->zcx_if_check_class~input_data ).
+    DATA(lo_root) = NEW zcx_root( io_exception        = lx_error
+                                  is_t100key          = lx_error->if_t100_message~t100key
+                                  iv_obj_id           = lx_error->zcx_if_check_class~obj_id
+                                  is_message          = lx_error->zcx_if_check_class~message
+                                  it_messages         = lx_error->zcx_if_check_class~messages
+                                  iv_subrc            = lx_error->zcx_if_check_class~subrc
+                                  it_input_data       = lx_error->zcx_if_check_class~input_data
+                                  is_auto_log_enabled = lx_error->zcx_if_check_class~is_auto_log_enabled ).
     lo_root->log( ).
 
     DATA(lt_messages) = zial_cl_log=>get( )->get_messages( ).
@@ -433,11 +438,10 @@ CLASS ltc_root IMPLEMENTATION.
 
   METHOD t0013.
 
-    zcx_root=>is_auto_log_enabled = abap_true.
-
     TRY.
         RAISE EXCEPTION TYPE zcx_error
-          EXPORTING textid = cx_sy_dynamic_osql_semantics=>unknown_table_name.
+          EXPORTING textid              = cx_sy_dynamic_osql_semantics=>unknown_table_name
+                    is_auto_log_enabled = abap_true.
 
       CATCH cx_root INTO DATA(lx_error) ##NEEDED.
     ENDTRY.
@@ -445,6 +449,63 @@ CLASS ltc_root IMPLEMENTATION.
     DATA(lt_messages) = zial_cl_log=>get( )->get_messages( ).
     cl_abap_unit_assert=>assert_equals( exp = 3
                                         act = lines( lt_messages ) ).
+
+  ENDMETHOD.
+
+
+  METHOD t0014.
+
+    TRY.
+        MESSAGE e530(sy) INTO DATA(lv_exp_msgtx).
+        RAISE EXCEPTION TYPE /scwm/cx_mfs.
+
+      CATCH cx_root INTO DATA(lx_error).
+        DATA(lt_act_messages) = zial_cl_log=>to_bapiret( io_exception = lx_error ).
+        DATA(lv_act_msgtx) = VALUE #( lt_act_messages[ 1 ]-message OPTIONAL ).
+        DATA(lv_act_msgty) = VALUE #( lt_act_messages[ 1 ]-type OPTIONAL ).
+
+    ENDTRY.
+
+    cl_abap_unit_assert=>assert_equals( exp = lv_exp_msgtx
+                                        act = lv_act_msgtx ).
+
+    cl_abap_unit_assert=>assert_equals( exp = 'E'
+                                        act = lv_act_msgty ).
+
+  ENDMETHOD.
+
+
+  METHOD t0015.
+
+    DATA(lv_exp_msgtx) = |Exception ZCX_WT_NOT_CREATABLE was raised|.
+
+    TRY.
+        RAISE EXCEPTION TYPE zcx_wt_not_creatable.
+
+      CATCH cx_root INTO DATA(lx_error).
+        DATA(lx_root) = zcx_root=>conv_sap_cx( lx_error ).
+
+        TRY.
+            DATA(lt_bapiret) = lx_root->get_messages( ).
+            DATA(ls_bapiret) = VALUE #( lt_bapiret[ 1 ] OPTIONAL ).
+            zial_cl_log=>to_string( iv_msgty   = 'E'
+                                    is_bapiret = ls_bapiret ).
+            /scwm/cx_mfs=>raise_exception( iv_syst = 'X' ).
+
+          CATCH /scwm/cx_mfs INTO DATA(ix_mfs).
+            MESSAGE ID ix_mfs->if_t100_message~t100key-msgid
+                    TYPE ix_mfs->mv_msgty
+                    NUMBER ix_mfs->if_t100_message~t100key-msgno
+                    WITH ix_mfs->mv_msgv1 ix_mfs->mv_msgv2
+                         ix_mfs->mv_msgv3 ix_mfs->mv_msgv4
+                    INTO DATA(lv_act_msgtx).
+
+        ENDTRY.
+
+    ENDTRY.
+
+    cl_abap_unit_assert=>assert_equals( exp = lv_exp_msgtx
+                                        act = lv_act_msgtx ).
 
   ENDMETHOD.
 

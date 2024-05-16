@@ -1,7 +1,7 @@
 CLASS zcx_no_check DEFINITION
   PUBLIC
-  INHERITING FROM cx_no_check ABSTRACT
-  CREATE PUBLIC
+  INHERITING FROM cx_no_check
+  CREATE PROTECTED
   GLOBAL FRIENDS zcx_root.
 
   PUBLIC SECTION.
@@ -12,6 +12,8 @@ CLASS zcx_no_check DEFINITION
     ALIASES messages     FOR zcx_if_check_class~messages.
     ALIASES obj_id       FOR zcx_if_check_class~obj_id.
     ALIASES subrc        FOR zcx_if_check_class~subrc.
+    ALIASES class_name   FOR zcx_if_check_class~class_name.
+    ALIASES root         FOR zcx_if_check_class~root.
 
     ALIASES get_message  FOR zcx_if_check_class~get_message.
     ALIASES get_messages FOR zcx_if_check_class~get_messages.
@@ -19,14 +21,15 @@ CLASS zcx_no_check DEFINITION
     ALIASES log_info     FOR zcx_if_check_class~log_info.
 
     METHODS constructor
-      IMPORTING textid     TYPE sotr_conc               OPTIONAL
-                t100key    TYPE scx_t100key             OPTIONAL
-                !previous  LIKE previous                OPTIONAL
-                obj_id     TYPE objectname              DEFAULT zcx_root=>mc_obj_id-generic
-                !message   TYPE bapiret2                OPTIONAL
-                !messages  TYPE bapiret2_t              OPTIONAL
-                !subrc     TYPE sysubrc                 DEFAULT sy-subrc
-                input_data TYPE rsra_t_alert_definition OPTIONAL.
+      IMPORTING textid              TYPE sotr_conc               OPTIONAL
+                t100key             TYPE scx_t100key             OPTIONAL
+                !previous           LIKE previous                OPTIONAL
+                obj_id              TYPE objectname              DEFAULT zcx_root=>mc_obj_id-generic
+                !message            TYPE bapiret2                OPTIONAL
+                !messages           TYPE bapiret2_t              OPTIONAL
+                !subrc              TYPE sysubrc                 DEFAULT sy-subrc
+                input_data          TYPE rsra_t_alert_definition OPTIONAL
+                is_auto_log_enabled TYPE abap_bool               DEFAULT abap_false.
 
     METHODS if_message~get_text REDEFINITION.
 
@@ -36,8 +39,6 @@ CLASS zcx_no_check DEFINITION
       RETURNING VALUE(rv_result) TYPE abap_bool.
 
   PROTECTED SECTION.
-    DATA mo_cx_root TYPE REF TO zcx_root.
-
     "! <p class="shorttext synchronized">Custom code on construction</p>
     "! <p>Customer-specific construction as redefinition of constructor is not
     "! allowed and one would have to define the whole constructor over and
@@ -55,15 +56,22 @@ CLASS zcx_no_check IMPLEMENTATION.
     super->constructor( textid   = textid
                         previous = previous ).
 
-    mo_cx_root = NEW #( io_exception  = me
-                        is_t100key    = t100key
-                        iv_obj_id     = obj_id
-                        is_message    = message
-                        it_messages   = messages
-                        iv_subrc      = subrc
-                        it_input_data = input_data ).
+    class_name = zcx_root=>det_class_name( me ).
+
+    root = NEW #( io_exception        = me
+                  is_t100key          = t100key
+                  iv_obj_id           = obj_id
+                  is_message          = message
+                  it_messages         = messages
+                  iv_subrc            = subrc
+                  it_input_data       = input_data
+                  is_auto_log_enabled = is_auto_log_enabled ).
 
     on_construction( ).
+
+    IF is_auto_log_enabled EQ abap_true.
+      log( ).
+    ENDIF.
 
   ENDMETHOD.
 
@@ -73,24 +81,24 @@ CLASS zcx_no_check IMPLEMENTATION.
 
 
   METHOD zcx_if_check_class~get_message.
-    rs_message = mo_cx_root->get_message( ).
+    rs_message = root->get_message( ).
   ENDMETHOD.
 
 
   METHOD zcx_if_check_class~get_messages.
-    rt_messages = mo_cx_root->get_messages( ).
+    rt_messages = root->get_messages( ).
   ENDMETHOD.
 
 
   METHOD if_message~get_text.
 
-    CASE mo_cx_root->get_call_on_super( ).
+    CASE root->get_call_on_super( ).
       WHEN abap_true.
         result = super->get_text( ).
-        mo_cx_root->reset_call_on_super( ).
+        root->reset_call_on_super( ).
 
       WHEN abap_false.
-        result = mo_cx_root->get_text( ).
+        result = root->get_text( ).
 
     ENDCASE.
 
@@ -98,22 +106,22 @@ CLASS zcx_no_check IMPLEMENTATION.
 
 
   METHOD zcx_if_check_class~log.
-    mo_cx_root->log( ).
+    root->log( ).
   ENDMETHOD.
 
 
   METHOD zcx_if_check_class~log_info.
-    mo_cx_root->log_info( ).
+    root->log_info( ).
   ENDMETHOD.
 
 
   METHOD display_message.
-    mo_cx_root->display_message( ).
+    root->display_message( ).
   ENDMETHOD.
 
 
   METHOD is_dflt_message.
-    rv_result = mo_cx_root->is_dflt_message( ).
+    rv_result = root->is_dflt_message( ).
   ENDMETHOD.
 
 ENDCLASS.

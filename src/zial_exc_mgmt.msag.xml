@@ -11,8 +11,14 @@
     <T100>
      <SPRSL>E</SPRSL>
      <ARBGB>ZIAL_EXC_MGMT</ARBGB>
+     <MSGNR>000</MSGNR>
+     <TEXT>Exception &amp;1 was raised</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZIAL_EXC_MGMT</ARBGB>
      <MSGNR>001</MSGNR>
-     <TEXT>Exception &amp;1 has been raised for &amp;2 (subrc: &amp;3).</TEXT>
+     <TEXT>Exception &amp;1 was raised for &amp;2 (subrc: &amp;3).</TEXT>
     </T100>
    </T100>
   </asx:values>
