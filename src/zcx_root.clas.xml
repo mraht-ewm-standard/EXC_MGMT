@@ -5,7 +5,7 @@
    <VSEOCLASS>
     <CLSNAME>ZCX_ROOT</CLSNAME>
     <LANGU>E</LANGU>
-    <DESCRIPT>Root: Exception class helper</DESCRIPT>
+    <DESCRIPT>Root</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>

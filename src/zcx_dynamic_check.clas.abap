@@ -1,9 +1,9 @@
-"! <p class="shorttext synchronized">Root: Unrecoverable exceptions</p>
+"! <p class="shorttext synchronized">Root: Avoidable exceptions</p>
 "! <p><strong>Usage:</strong>
-"! Severe exception from which recovery is not to be expected</p>
-CLASS zcx_no_check DEFINITION
+"! Caller has full concious control over occurrence of an exception</p>
+CLASS zcx_dynamic_check DEFINITION
   PUBLIC
-  INHERITING FROM cx_no_check
+  INHERITING FROM cx_dynamic_check
   CREATE PROTECTED
   GLOBAL FRIENDS zcx_root.
 
@@ -52,7 +52,7 @@ CLASS zcx_no_check DEFINITION
 ENDCLASS.
 
 
-CLASS zcx_no_check IMPLEMENTATION.
+CLASS zcx_dynamic_check IMPLEMENTATION.
 
   METHOD constructor ##ADT_SUPPRESS_GENERATION.
 

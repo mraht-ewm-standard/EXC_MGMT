@@ -1,3 +1,6 @@
+"! <p class="shorttext synchronized">Root: Manageable exceptions</p>
+"! <p><strong>Usage:</strong>
+"! Exception can be expected to occur and can be reasonably handled by the receiver</p>
 CLASS zcx_static_check DEFINITION
   PUBLIC
   INHERITING FROM cx_static_check

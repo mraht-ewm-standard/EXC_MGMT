@@ -5,7 +5,7 @@
    <VSEOCLASS>
     <CLSNAME>ZCX_NO_CHECK</CLSNAME>
     <LANGU>E</LANGU>
-    <DESCRIPT>Root: Static exceptions</DESCRIPT>
+    <DESCRIPT>Root: Unrecoverable exceptions</DESCRIPT>
     <CATEGORY>40</CATEGORY>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>

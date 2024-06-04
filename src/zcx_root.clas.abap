@@ -1,8 +1,10 @@
+"! <p class="shorttext synchronized">Root</p>
 CLASS zcx_root DEFINITION
   PUBLIC FINAL
   CREATE PROTECTED
   GLOBAL FRIENDS zcx_no_check
-                 zcx_static_check.
+                 zcx_static_check
+                 zcx_dynamic_check.
 
   PUBLIC SECTION.
     CONSTANTS: BEGIN OF mc_obj_id,
