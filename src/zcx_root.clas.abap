@@ -170,7 +170,6 @@ CLASS zcx_root IMPLEMENTATION.
 
       DATA(lv_index) = sy-index.
 
-      DATA(lt_messages) = VALUE bapiret2_t( ).
       CASE lv_index.
         WHEN 1.
           CHECK exception->messages IS NOT INITIAL.
@@ -183,9 +182,8 @@ CLASS zcx_root IMPLEMENTATION.
                                                IMPORTING result = DATA(lv_msgtx) ).
           cl_message_helper=>replace_text_params( EXPORTING obj    = exception
                                                   CHANGING  result = lv_msgtx ).
-          lt_messages = zial_cl_log=>to_bapiret( iv_msgty = 'E'
-                                                 iv_msgtx = CONV #( lv_msgtx ) ).
-          exception->message = VALUE #( lt_messages[ 1 ] OPTIONAL ).
+          exception->message = zial_cl_log=>to_bapiret( iv_msgty = 'E'
+                                                        iv_msgtx = lv_msgtx ).
 
         WHEN 3.
           CHECK exception->if_t100_message~t100key IS NOT INITIAL
@@ -209,14 +207,13 @@ CLASS zcx_root IMPLEMENTATION.
             ls_message-msgv4 = exception->if_t100_dyn_msg~msgv4.
           ENDIF.
 
-          lt_messages = zial_cl_log=>to_bapiret( iv_msgid = ls_message-msgid
-                                                 iv_msgty = ls_message-msgty
-                                                 iv_msgno = ls_message-msgno
-                                                 iv_msgv1 = ls_message-msgv1
-                                                 iv_msgv2 = ls_message-msgv2
-                                                 iv_msgv3 = ls_message-msgv3
-                                                 iv_msgv4 = ls_message-msgv4 ).
-          exception->message = VALUE #( lt_messages[ 1 ] OPTIONAL ).
+          exception->message = zial_cl_log=>to_bapiret( iv_msgid = ls_message-msgid
+                                                        iv_msgty = ls_message-msgty
+                                                        iv_msgno = ls_message-msgno
+                                                        iv_msgv1 = ls_message-msgv1
+                                                        iv_msgv2 = ls_message-msgv2
+                                                        iv_msgv3 = ls_message-msgv3
+                                                        iv_msgv4 = ls_message-msgv4 ).
 
         WHEN 4.
           CHECK lo_exception_as_root->previous IS BOUND.
@@ -224,16 +221,14 @@ CLASS zcx_root IMPLEMENTATION.
             exception->message = CAST zcx_if_check_class( lo_exception_as_root->previous )->get_message( ).
           ELSE.
             lv_msgtx = lo_exception_as_root->previous->get_text( ).
-            lt_messages = zial_cl_log=>to_bapiret( iv_msgty = 'E'
-                                                   iv_msgtx = CONV #( lv_msgtx ) ).
-            exception->message = VALUE #( lt_messages[ 1 ] OPTIONAL ).
+            exception->message = zial_cl_log=>to_bapiret( iv_msgty = 'E'
+                                                          iv_msgtx = lv_msgtx ).
           ENDIF.
 
         WHEN OTHERS.
           lv_msgtx = get_text_by_super( ).
-          lt_messages = zial_cl_log=>to_bapiret( iv_msgty = 'E'
-                                                 iv_msgtx = CONV #( lv_msgtx ) ).
-          exception->message = VALUE #( lt_messages[ 1 ] OPTIONAL ).
+          exception->message = zial_cl_log=>to_bapiret( iv_msgty = 'E'
+                                                        iv_msgtx = lv_msgtx ).
           EXIT.
 
       ENDCASE.
@@ -253,8 +248,8 @@ CLASS zcx_root IMPLEMENTATION.
       IF lo_exception_as_root->previous IS INSTANCE OF zcx_if_check_class.
         INSERT LINES OF CAST zcx_if_check_class( lo_exception_as_root->previous )->get_messages( ) INTO TABLE rt_messages.
       ELSE.
-        INSERT LINES OF zial_cl_log=>to_bapiret( iv_msgtx = CONV #( lo_exception_as_root->previous->get_text( ) )
-                                                 iv_msgty = 'E' ) INTO TABLE rt_messages.
+        INSERT LINES OF zial_cl_log=>to_bapirets( iv_msgtx = CONV #( lo_exception_as_root->previous->get_text( ) )
+                                                  iv_msgty = 'E' ) INTO TABLE rt_messages.
       ENDIF.
     ENDIF.
 
