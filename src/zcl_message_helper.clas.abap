@@ -813,8 +813,7 @@ CLASS zcl_message_helper IMPLEMENTATION.
 
     FIELD-SYMBOLS <id> LIKE sy-msgid.
     FIELD-SYMBOLS <no> LIKE sy-msgno.
-    " TODO: variable is assigned but never used (ABAP cleaner)
-    FIELD-SYMBOLS <fs> TYPE any.
+    FIELD-SYMBOLS <fs> TYPE any ##NEEDED.
 
     TRY.
         iref ?= msg.
