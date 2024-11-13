@@ -17,7 +17,10 @@ INTERFACE zcx_if_check_class
 
   METHODS get_message  RETURNING VALUE(rs_message)  TYPE bapiret2.
   METHODS get_messages RETURNING VALUE(rt_messages) TYPE bapiret2_t.
-  METHODS log.
+
+  METHODS log
+    IMPORTING iv_with_info TYPE abap_bool DEFAULT abap_true.
+
   METHODS log_info.
 
 ENDINTERFACE.

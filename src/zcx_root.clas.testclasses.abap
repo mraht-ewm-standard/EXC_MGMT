@@ -267,7 +267,7 @@ CLASS ltc_root IMPLEMENTATION.
                 TRY.
                     " TEXTID
                     lv_exp_msgtx = |The database table 'TOKEN' is unknown|.
-                    lt_exp_messages = zial_cl_log=>to_bapirets( iv_msgtx = CONV #( lv_exp_msgtx ) ).
+                    lt_exp_messages = zial_cl_log=>to_bapirets( iv_msgtx = lv_exp_msgtx ).
 
                     RAISE EXCEPTION TYPE zcx_error
                       EXPORTING previous = lx_error_3

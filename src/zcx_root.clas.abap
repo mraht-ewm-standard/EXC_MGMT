@@ -88,7 +88,8 @@ CLASS zcx_root DEFINITION
     "! should be turned on again if automatic logging is to be used or everyone only
     "! works with RAISE EXCEPTION NEW as this always triggers the object constructor
     "! and thus the logging.</p>
-    METHODS log.
+    METHODS log
+      IMPORTING iv_with_info TYPE abap_bool DEFAULT abap_true.
 
     METHODS get_text_by_super
       RETURNING VALUE(rv_result) TYPE string.
@@ -128,7 +129,7 @@ CLASS zcx_root IMPLEMENTATION.
     exception->is_auto_log_enabled = is_auto_log_enabled.
 
 *    IF is_auto_log_enabled EQ abap_true.
-*      log( ).
+*      log_message( ).
 *    ENDIF.
 
   ENDMETHOD.
@@ -284,14 +285,16 @@ CLASS zcx_root IMPLEMENTATION.
     DATA(lv_components) = zial_cl_log=>get_components_from_msgde( exception->input_data ).
     DATA(lt_msgde) = create_log_msgde( ).
     MESSAGE e001(zial_exc_mgmt) WITH lv_class_name lv_components exception->subrc INTO DATA(lv_msg) ##NEEDED.
-    zial_cl_log=>get( )->log_message( lt_msgde ).
+    zial_cl_log=>get( )->log_message( it_msgde = lt_msgde ).
 
   ENDMETHOD.
 
 
   METHOD log.
 
-    log_info( ).
+    IF iv_with_info EQ abap_true.
+      log_info( ).
+    ENDIF.
 
     zial_cl_log=>get( )->log_bapiret( get_messages( ) ).
 

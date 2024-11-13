@@ -109,7 +109,7 @@ CLASS zcx_no_check IMPLEMENTATION.
 
 
   METHOD zcx_if_check_class~log.
-    root->log( ).
+    root->log( iv_with_info ).
   ENDMETHOD.
 
 
