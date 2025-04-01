@@ -80,7 +80,8 @@ CLASS zcx_root DEFINITION
       RETURNING VALUE(rt_msgde) TYPE rsra_t_alert_definition.
 
     "! <p class="shorttext synchronized"></p>
-    "! <p><strong>Note:</strong>
+    "! <p>NOT supported in NO_LOGGING version!</p>
+    "! <p><strong>Usage:</strong>
     "! Z-Exceptions support automatic logging if the new syntax RAISE EXCEPTION NEW
     "! is being used or the exception object is being constructed either manually
     "! before being thrown or in the catching block via INTO DATA(lo_exception). As
