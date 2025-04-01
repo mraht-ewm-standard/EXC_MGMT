@@ -33,7 +33,7 @@ CLASS zcx_root DEFINITION
                 it_input_data       TYPE rsra_t_alert_definition
                 is_auto_log_enabled TYPE abap_bool.
 
-    METHODS log_info.
+
 
     METHODS get_message
       RETURNING VALUE(rs_message) TYPE bapiret2.
@@ -80,7 +80,8 @@ CLASS zcx_root DEFINITION
       RETURNING VALUE(rt_msgde) TYPE rsra_t_alert_definition.
 
     "! <p class="shorttext synchronized"></p>
-    "! <p><strong>Note:</strong>
+    "! <p>NOT supported in LITE version!</p>
+    "! <p><strong>Usage:</strong>
     "! Z-Exceptions support automatic logging if the new syntax RAISE EXCEPTION NEW
     "! is being used or the exception object is being constructed either manually
     "! before being thrown or in the catching block via INTO DATA(lo_exception). As
@@ -279,25 +280,7 @@ CLASS zcx_root IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD log_info.
-
-    DATA(lv_class_name) = det_class_name( exception ).
-    DATA(lv_components) = zial_cl_log=>get_components_from_msgde( exception->input_data ).
-    DATA(lt_msgde) = create_log_msgde( ).
-    MESSAGE e001(zial_exc_mgmt) WITH lv_class_name lv_components exception->subrc INTO DATA(lv_msg) ##NEEDED.
-    zial_cl_log=>get( )->log_message( it_msgde = lt_msgde ).
-
-  ENDMETHOD.
-
-
   METHOD log.
-
-    IF iv_with_info EQ abap_true.
-      log_info( ).
-    ENDIF.
-
-    zial_cl_log=>get( )->log_bapiret( get_messages( ) ).
-
   ENDMETHOD.
 
 
