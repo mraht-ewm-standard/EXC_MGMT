@@ -4,15 +4,19 @@
   <DATA>
    <GROUP_ID>c-a-s.de</GROUP_ID>
    <ARTIFACT_ID>exc-mgmt</ARTIFACT_ID>
-   <VERSION>05.05.2023.001-rc</VERSION>
+   <VERSION>01.04.2025.001-rc</VERSION>
    <REPOSITORY_TYPE>abapGit</REPOSITORY_TYPE>
    <GIT_URL>https://github.com/mraht-ewm-standard/EXC_MGMT.git</GIT_URL>
    <DEPENDENCIES>
     <item>
      <GROUP_ID>c-a-s.de</GROUP_ID>
-     <ARTIFACT_ID>logging</ARTIFACT_ID>
-     <GIT_URL>https://github.com/mraht-ewm-standard/LOGGING.git</GIT_URL>
-     <TARGET_PACKAGE>ZIAL_LOGGING</TARGET_PACKAGE>
+     <ARTIFACT_ID>aunit</ARTIFACT_ID>
+     <GIT_URL>https://github.com/mraht-ewm-standard/AUNIT.git</GIT_URL>
+    </item>
+    <item>
+     <GROUP_ID>c-a-s.de</GROUP_ID>
+     <ARTIFACT_ID>logging-msg</ARTIFACT_ID>
+     <GIT_URL>https://github.com/mraht-ewm-standard/LOGGING_MSG.git</GIT_URL>
     </item>
    </DEPENDENCIES>
   </DATA>
