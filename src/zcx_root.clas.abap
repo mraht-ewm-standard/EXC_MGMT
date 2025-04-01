@@ -74,6 +74,8 @@ CLASS zcx_root DEFINITION
     DATA call_on_super TYPE abap_bool.
     DATA exception     TYPE REF TO zcx_if_check_class.
 
+    "! Callstack is being added via ZIAL_CL_LOG=>GET( )->LOG_EXCEPTION( lo_exception ).
+    "! @parameter rt_msgde | Message details
     METHODS create_log_msgde
       RETURNING VALUE(rt_msgde) TYPE rsra_t_alert_definition.
 
@@ -128,10 +130,6 @@ CLASS zcx_root IMPLEMENTATION.
     exception->input_data          = it_input_data.
     exception->is_auto_log_enabled = is_auto_log_enabled.
 
-*    IF is_auto_log_enabled EQ abap_true.
-*      log_message( ).
-*    ENDIF.
-
   ENDMETHOD.
 
 
@@ -145,13 +143,13 @@ CLASS zcx_root IMPLEMENTATION.
                                   occ = 80 ) ) TO rt_msgde.
     APPEND LINES OF exception->input_data TO rt_msgde.
 
-    " Callstack is being added via ZIAL_CL_LOG=>GET( )->LOG_EXCEPTION( lo_exception ).
-
   ENDMETHOD.
 
 
   METHOD get_call_on_super.
+
     rv_result = call_on_super.
+
   ENDMETHOD.
 
 
@@ -191,7 +189,7 @@ CLASS zcx_root IMPLEMENTATION.
             AND exception->if_t100_message~t100key NE exception->if_t100_message~default_textid
             AND exception->if_t100_message~t100key NE default_textid.
 
-          DATA(ls_message) = zcl_message_helper=>get_t100_for_object( obj = exception ).
+          DATA(ls_message) = zcl_message_statement_helper=>get_t100_for_object( exception ).
           IF exception->if_t100_dyn_msg~msgty IS NOT INITIAL.
             ls_message-msgty = exception->if_t100_dyn_msg~msgty.
           ENDIF.
@@ -266,9 +264,11 @@ CLASS zcx_root IMPLEMENTATION.
 
 
   METHOD get_text_by_super.
+
     CHECK exception->root IS NOT INITIAL.
     register_call_on_super( ).
     rv_result = exception->if_message~get_text( ).
+
   ENDMETHOD.
 
 
@@ -302,18 +302,24 @@ CLASS zcx_root IMPLEMENTATION.
 
 
   METHOD register_call_on_super.
+
     call_on_super = abap_true.
+
   ENDMETHOD.
 
 
   METHOD reset_call_on_super.
+
     call_on_super = abap_false.
+
   ENDMETHOD.
 
 
   METHOD display_message.
+
     DATA(ls_message) = get_message( ).
     MESSAGE ls_message-message TYPE 'S' DISPLAY LIKE ls_message-type.
+
   ENDMETHOD.
 
 

@@ -1,5 +1,6 @@
 "! Utility Class for Statement MESSAGE
-CLASS zcl_message_helper DEFINITION
+"! <p>Based on SAP class CL_MESSAGE_HELPER</p>
+CLASS zcl_message_statement_helper DEFINITION
   PUBLIC FINAL
   CREATE PRIVATE.
 
@@ -172,7 +173,7 @@ CLASS zcl_message_helper DEFINITION
 ENDCLASS.
 
 
-CLASS zcl_message_helper IMPLEMENTATION.
+CLASS zcl_message_statement_helper IMPLEMENTATION.
 
   METHOD strip_newlines_from.
     DATA space_newline TYPE string.
@@ -191,29 +192,39 @@ CLASS zcl_message_helper IMPLEMENTATION.
 
 
   METHOD set_single_msg_var_xseq.
+
     " a kind of MOVE where all conversion errors are signaled by exceptions
     WRITE arg LEFT-JUSTIFIED TO target.
+
   ENDMETHOD.
 
 
   METHOD set_single_msg_var_numeric.
+
     " a kind of MOVE where all conversion errors are signaled by exceptions
     WRITE arg LEFT-JUSTIFIED TO target.
+
   ENDMETHOD.
 
 
   METHOD set_single_msg_var_clike.
+
     " a kind of MOVE where all conversion errors are signaled by exceptions
     WRITE arg LEFT-JUSTIFIED TO target.
+
   ENDMETHOD.
 
 
   METHOD set_single_msg_var.
+
     FIELD-SYMBOLS <fs> TYPE any.
 
     IF arg IS INITIAL.
+
       CLEAR target.
+
     ELSE.
+
       TRY.
           ASSIGN obj->(arg) TO <fs>.
           IF sy-subrc NE 0.
@@ -239,12 +250,16 @@ CLASS zcl_message_helper IMPLEMENTATION.
 
         CATCH cx_sy_assign_cast_illegal_cast.
           CONCATENATE '&' arg '&' INTO target.
+
       ENDTRY.
+
     ENDIF.
+
   ENDMETHOD.
 
 
   METHOD set_msg_vars_for_if_t100_msg.
+
     IF text IS INITIAL.
       RAISE EXCEPTION TYPE cx_sy_message_illegal_text
         EXPORTING textid = cx_sy_message_illegal_text=>initial_ref.
@@ -268,11 +283,11 @@ CLASS zcl_message_helper IMPLEMENTATION.
     set_single_msg_var( EXPORTING arg    = text->t100key-attr4
                                   obj    = text
                         IMPORTING target = sy-msgv4 ).
+
   ENDMETHOD.
 
 
   METHOD set_msg_vars_for_if_msg.
-    " a kind of type switch...
 
     DATA iref TYPE REF TO if_t100_message.
 
@@ -280,15 +295,19 @@ CLASS zcl_message_helper IMPLEMENTATION.
         iref ?= text.
         set_msg_vars_for_if_t100_msg( text = iref ).
         CLEAR string.
+
       CATCH cx_sy_move_cast_error.
         string = text->get_text( ).
         set_msg_vars_for_clike( text = string ).
         message_object = text.
+
     ENDTRY.
+
   ENDMETHOD.
 
 
   METHOD set_msg_vars_for_clike.
+
     DATA offset TYPE i.
     DATA c200   TYPE c LENGTH 200.
 
@@ -319,11 +338,11 @@ CLASS zcl_message_helper IMPLEMENTATION.
     ENDIF.
 
     sy-msgv4 = c200+offset(50).
+
   ENDMETHOD.
 
 
   METHOD set_msg_vars_for_any.
-    " a kind of type switch...
 
     DATA iref TYPE REF TO if_t100_message.
 
@@ -332,35 +351,38 @@ CLASS zcl_message_helper IMPLEMENTATION.
 
         set_msg_vars_for_if_t100_msg( text = iref ).
         CLEAR string.
+
       CATCH cx_sy_move_cast_error.
         TRY.
             set_msg_vars_for_clike( text = text ).
             string = text.
+
           CATCH cx_sy_dyn_call_illegal_type.
             RAISE EXCEPTION TYPE cx_sy_message_illegal_text
               EXPORTING textid = cx_sy_message_illegal_text=>illegal_type.
+
         ENDTRY.
+
     ENDTRY.
+
   ENDMETHOD.
 
 
   METHOD replace_text_params.
-*  DATA: params TYPE sotr_params.
 
     DATA params TYPE sbtfr_param_tt.
 
-*  CALL METHOD get_text_params
     get_text_sparams( EXPORTING obj    = obj
                       IMPORTING params = params ).
     CALL FUNCTION 'SOTR_REPLACE_PARAMS'
-      EXPORTING
-*                parameter  = params
-                sparameter = params
+      EXPORTING sparameter = params
       CHANGING  text       = result.
+
   ENDMETHOD.
 
 
   METHOD get_text_sparams.
+
     DATA descr   TYPE REF TO cl_abap_objectdescr.
     DATA par     TYPE sbtfr_param.
     DATA char255 TYPE c LENGTH 255.
@@ -374,6 +396,7 @@ CLASS zcl_message_helper IMPLEMENTATION.
     descr ?= cl_abap_objectdescr=>describe_by_object_ref( obj ).
 
     LOOP AT descr->attributes ASSIGNING <attr>.
+
       IF    <attr>-visibility  EQ cl_abap_classdescr=>private
         " we can only access protected attributes if we are a friend
          OR <attr>-is_class    NE abap_false
@@ -384,24 +407,31 @@ CLASS zcl_message_helper IMPLEMENTATION.
       par-param = <attr>-name.
 
       IF <attr>-name IS INITIAL.
+
         CLEAR par-value.
+
       ELSEIF <attr>-type_kind EQ cl_abap_typedescr=>typekind_string
           OR <attr>-type_kind EQ cl_abap_typedescr=>typekind_xstring.
+
         ASSIGN obj->(<attr>-name) TO <fs>.
         IF sy-subrc NE 0.
           CONCATENATE '&' <attr>-name '&' INTO par-value.
         ELSE.
           par-value = <fs>.
         ENDIF.
+
       ELSEIF <attr>-length LT 128
           OR     <attr>-length LT 256
              AND (    <attr>-type_kind EQ cl_abap_typedescr=>typekind_char
                    OR <attr>-type_kind EQ cl_abap_typedescr=>typekind_num ).
+
         set_single_msg_var( EXPORTING arg    = <attr>-name
                                       obj    = obj
                             IMPORTING target = char255 ).   " WRITE can not have destination of type string
         par-value = char255.
+
       ELSE.
+
         IF <attr>-type_kind EQ cl_abap_typedescr=>typekind_hex.
           clen = <attr>-length * 2.
         ELSE.
@@ -413,14 +443,18 @@ CLASS zcl_message_helper IMPLEMENTATION.
                                       obj    = obj
                             IMPORTING target = <cfs> ).   " WRITE can not have destination of type string
         par-value = <cfs>.
+
       ENDIF.
 
       APPEND par TO params.
+
     ENDLOOP.
+
   ENDMETHOD.
 
 
   METHOD get_text_params.
+
     DATA descr TYPE REF TO cl_abap_objectdescr.
     DATA par   TYPE sotr_param.
 
@@ -430,10 +464,8 @@ CLASS zcl_message_helper IMPLEMENTATION.
 
     LOOP AT descr->attributes ASSIGNING <attr>.
       " enable constants - ARO 01/2012
-      IF <attr>-visibility NE cl_abap_classdescr=>private. " AND
+      IF <attr>-visibility NE cl_abap_classdescr=>private.
         " we can only access protected attributes if we are a friend
-*       <attr>-is_class    = abap_false AND
-*       <attr>-is_constant = abap_false.
         par-param = <attr>-name.
         set_single_msg_var( EXPORTING arg    = <attr>-name
                                       obj    = obj
@@ -441,10 +473,12 @@ CLASS zcl_message_helper IMPLEMENTATION.
         APPEND par TO params.
       ENDIF.
     ENDLOOP.
+
   ENDMETHOD.
 
 
   METHOD get_text_for_message.
+
     DATA t100key TYPE scx_t100key.
     DATA textid  TYPE sotr_conc.
 
@@ -466,10 +500,12 @@ CLASS zcl_message_helper IMPLEMENTATION.
       cl_message_helper=>replace_text_params( EXPORTING obj    = text
                                               CHANGING  result = result ).
     ENDIF.
+
   ENDMETHOD.
 
 
   METHOD get_t100_text_for.
+
     DATA msgid    TYPE symsgid.
     DATA msgty    TYPE symsgty.
     DATA msgno    TYPE symsgno.
@@ -583,6 +619,7 @@ CLASS zcl_message_helper IMPLEMENTATION.
 
 
   METHOD get_t100_longtext_itf.
+
     DATA docu_key TYPE doku_obj.
     DATA itf_line TYPE tline.
 
@@ -638,10 +675,12 @@ CLASS zcl_message_helper IMPLEMENTATION.
     CONCATENATE 'DEFINE &V1& = ''' itf_line-tdline ''''
                 INTO itf_line-tdline.
     INSERT itf_line INTO itf_itab INDEX 1.
+
   ENDMETHOD.
 
 
   METHOD get_t100_longtext_for.
+
     " Long text often has no parameters -> prepend short text
 
     DATA len      TYPE i.
@@ -725,6 +764,7 @@ CLASS zcl_message_helper IMPLEMENTATION.
 
 
   METHOD get_otr_text_raw.
+
     DATA text TYPE sotr_txt.
 
     CALL FUNCTION 'SOTR_GET_TEXT_KEY'
@@ -736,10 +776,12 @@ CLASS zcl_message_helper IMPLEMENTATION.
     IF sy-subrc EQ 0.
       result = text.
     ENDIF.
+
   ENDMETHOD.
 
 
   METHOD get_otr_longtext_raw.
+
     CALL FUNCTION 'SOTR_LINK_GET_ENTRY_RUNTIME'
       EXPORTING  concept_1 = textid
                  langu     = sy-langu
@@ -749,10 +791,12 @@ CLASS zcl_message_helper IMPLEMENTATION.
     IF sy-subrc NE 0.
       CLEAR result.
     ENDIF.
+
   ENDMETHOD.
 
 
   METHOD get_longtext_for_message.
+
     DATA t100key TYPE scx_t100key.
     DATA textid  TYPE sotr_conc.
 
@@ -779,6 +823,7 @@ CLASS zcl_message_helper IMPLEMENTATION.
     IF result IS NOT INITIAL AND preserve_newlines EQ abap_false.
       cl_message_helper=>strip_newlines_from( CHANGING message = result ).
     ENDIF.
+
   ENDMETHOD.
 
 
@@ -807,6 +852,7 @@ CLASS zcl_message_helper IMPLEMENTATION.
 
 
   METHOD check_msg_kind.
+
     DATA iref TYPE REF TO if_t100_message.
     DATA exc  TYPE REF TO cx_root.
     DATA obj  TYPE REF TO object.
@@ -863,6 +909,7 @@ CLASS zcl_message_helper IMPLEMENTATION.
             ENDTRY.
         ENDTRY.
     ENDTRY.
+
   ENDMETHOD.
 
 ENDCLASS.
