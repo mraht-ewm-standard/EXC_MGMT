@@ -84,12 +84,16 @@ CLASS zcx_dynamic_check IMPLEMENTATION.
 
 
   METHOD zcx_if_check_class~get_message.
+
     rs_message = root->get_message( ).
+
   ENDMETHOD.
 
 
   METHOD zcx_if_check_class~get_messages.
+
     rt_messages = root->get_messages( ).
+
   ENDMETHOD.
 
 
@@ -109,22 +113,30 @@ CLASS zcx_dynamic_check IMPLEMENTATION.
 
 
   METHOD zcx_if_check_class~log.
+
     root->log( iv_with_info ).
+
   ENDMETHOD.
 
 
   METHOD zcx_if_check_class~log_info.
+
     root->log_info( ).
+
   ENDMETHOD.
 
 
   METHOD display_message.
+
     root->display_message( ).
+
   ENDMETHOD.
 
 
   METHOD is_dflt_message.
+
     rv_result = root->is_dflt_message( ).
+
   ENDMETHOD.
 
 ENDCLASS.
