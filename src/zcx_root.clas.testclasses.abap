@@ -33,6 +33,7 @@ CLASS ltc_root DEFINITION FINAL
     METHODS t0010 FOR TESTING.
     METHODS t0011 FOR TESTING.
     METHODS t0012 FOR TESTING.
+    METHODS t0013 FOR TESTING.
 
 ENDCLASS.
 
@@ -346,6 +347,31 @@ CLASS ltc_root IMPLEMENTATION.
   METHOD t0010.
 
     TRY.
+        RAISE EXCEPTION TYPE zcx_error
+          EXPORTING input_data = VALUE #( ( fnam = 'TEST' low = '1234' ) ).
+
+      CATCH zcx_error INTO DATA(lx_error).
+    ENDTRY.
+
+    DATA(lo_root) = NEW zcx_root( io_exception        = lx_error
+                                  is_t100key          = lx_error->if_t100_message~t100key
+                                  iv_obj_id           = lx_error->zcx_if_check_class~obj_id
+                                  is_message          = lx_error->zcx_if_check_class~message
+                                  it_messages         = lx_error->zcx_if_check_class~messages
+                                  iv_subrc            = lx_error->zcx_if_check_class~subrc
+                                  it_input_data       = lx_error->zcx_if_check_class~input_data
+                                  is_auto_log_enabled = lx_error->zcx_if_check_class~is_auto_log_enabled ).
+    lo_root->log_info( ).
+
+    DATA(lt_messages) = zial_cl_log=>get( )->get_messages( ).
+    cl_abap_unit_assert=>assert_not_initial( act = lt_messages ).
+
+  ENDMETHOD.
+
+
+  METHOD t0011.
+
+    TRY.
         MESSAGE s499(sy) WITH 'LGNUM' INTO DATA(lv_exp_msgtx) ##NEEDED.
         DATA(ls_exp_message) = zial_cl_log=>to_bapiret( ).
 
@@ -371,7 +397,7 @@ CLASS ltc_root IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD t0011.
+  METHOD t0012.
 
     TRY.
         MESSAGE e499(sy) WITH 'ABCD is not a valid integer.' INTO DATA(lv_exp_msgtx) ##NEEDED.
@@ -401,7 +427,7 @@ CLASS ltc_root IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD t0012.
+  METHOD t0013.
 
     TRY.
         RAISE EXCEPTION TYPE zcx_error

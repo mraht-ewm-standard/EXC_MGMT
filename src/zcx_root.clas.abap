@@ -33,7 +33,11 @@ CLASS zcx_root DEFINITION
                 it_input_data       TYPE rsra_t_alert_definition
                 is_auto_log_enabled TYPE abap_bool.
 
+    "! NOT supported!
+    METHODS log_info.
 
+    "! NOT supported!
+    METHODS log_messages.
 
     METHODS get_message
       RETURNING VALUE(rs_message) TYPE bapiret2.
@@ -280,7 +284,22 @@ CLASS zcx_root IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD log_info.
+  ENDMETHOD.
+
+
   METHOD log.
+
+    IF iv_with_info EQ abap_true.
+      log_info( ).
+    ENDIF.
+
+    log_messages( ).
+
+  ENDMETHOD.
+
+
+  METHOD log_messages.
   ENDMETHOD.
 
 
