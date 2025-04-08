@@ -35,6 +35,8 @@ CLASS zcx_root DEFINITION
 
     METHODS log_info.
 
+    METHODS log_messages.
+
     METHODS get_message
       RETURNING VALUE(rs_message) TYPE bapiret2.
 
@@ -296,6 +298,13 @@ CLASS zcx_root IMPLEMENTATION.
     IF iv_with_info EQ abap_true.
       log_info( ).
     ENDIF.
+
+    log_messages( ).
+
+  ENDMETHOD.
+
+
+  METHOD log_messages.
 
     zial_cl_log=>get( )->log_bapiret( get_messages( ) ).
 
