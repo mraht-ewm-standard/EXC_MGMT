@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_MSAG" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <T100A>
+    <ARBGB>ZIAL_EXC_MGMT</ARBGB>
+    <MASTERLANG>E</MASTERLANG>
+    <STEXT>Exception Management</STEXT>
+   </T100A>
+   <T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZIAL_EXC_MGMT</ARBGB>
+     <MSGNR>000</MSGNR>
+     <TEXT>Exception &amp;1 was raised</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZIAL_EXC_MGMT</ARBGB>
+     <MSGNR>001</MSGNR>
+     <TEXT>Exception &amp;1 was raised for &amp;2 (subrc: &amp;3).</TEXT>
+    </T100>
+   </T100>
+  </asx:values>
+ </asx:abap>
+</abapGit>
