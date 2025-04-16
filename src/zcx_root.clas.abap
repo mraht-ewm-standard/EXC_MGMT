@@ -33,10 +33,8 @@ CLASS zcx_root DEFINITION
                 it_input_data       TYPE rsra_t_alert_definition
                 is_auto_log_enabled TYPE abap_bool.
 
-    "! NOT supported!
     METHODS log_info.
 
-    "! NOT supported!
     METHODS log_messages.
 
     METHODS get_message
@@ -285,6 +283,13 @@ CLASS zcx_root IMPLEMENTATION.
 
 
   METHOD log_info.
+
+    DATA(lv_class_name) = det_class_name( exception ).
+    DATA(lv_components) = zial_cl_log=>get_components_from_msgde( exception->input_data ).
+    DATA(lt_msgde) = create_log_msgde( ).
+    MESSAGE e001(zial_exc_mgmt) WITH lv_class_name lv_components exception->subrc INTO DATA(lv_msg) ##NEEDED.
+    zial_cl_log=>get( )->log_message( it_msgde = lt_msgde ).
+
   ENDMETHOD.
 
 
@@ -300,6 +305,9 @@ CLASS zcx_root IMPLEMENTATION.
 
 
   METHOD log_messages.
+
+    zial_cl_log=>get( )->log_bapiret( get_messages( ) ).
+
   ENDMETHOD.
 
 
