@@ -13,6 +13,11 @@
      <ARTIFACT_ID>aunit</ARTIFACT_ID>
      <GIT_URL>https://github.com/mraht-ewm-standard/AUNIT.git</GIT_URL>
     </item>
+    <item>
+     <GROUP_ID>c-a-s.de</GROUP_ID>
+     <ARTIFACT_ID>logging</ARTIFACT_ID>
+     <GIT_URL>https://github.com/mraht-ewm-standard/LOGGING.git</GIT_URL>
+    </item>
    </DEPENDENCIES>
   </DATA>
  </asx:values>
