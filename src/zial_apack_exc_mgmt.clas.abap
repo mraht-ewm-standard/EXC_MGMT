@@ -23,9 +23,7 @@ CLASS zial_apack_exc_mgmt IMPLEMENTATION.
     if_apack_manifest~descriptor-dependencies = VALUE #(
         group_id = 'c-a-s.de'
         ( artifact_id = 'aunit'
-          git_url     = 'https://github.com/mraht-ewm-standard/AUNIT.git' )
-        ( artifact_id = 'logging-msg'
-          git_url     = 'https://github.com/mraht-ewm-standard/LOGGING_MSG.git' ) ).
+          git_url     = 'https://github.com/mraht-ewm-standard/AUNIT.git' ) ).
 
   ENDMETHOD.
 
