@@ -1,5 +1,5 @@
 # Exception Management
-Exception Management
+Exception Management with logging
 
 
 ### Dependencies:
