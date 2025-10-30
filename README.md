@@ -1,7 +1,6 @@
 # Exception Management
 Exception Management with logging
 
-
 ### Dependencies:
 |Nr.|URL|Branch|
 |:-:|:--|:----:|
