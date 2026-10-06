@@ -268,6 +268,39 @@ CLASS zcx_root IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD get_messages_ext.
+
+    DATA(lo_exception_as_root) = CAST cx_root( io_exception ).
+
+    IF lo_exception_as_root->previous IS BOUND.
+      IF lo_exception_as_root->previous IS INSTANCE OF zcx_if_check_class.
+        INSERT LINES OF CAST zcx_if_check_class( lo_exception_as_root->previous )->get_messages( ) INTO TABLE rt_messages.
+      ELSE.
+        INSERT LINES OF zdgl_cl_log_msg=>to_bapirets( iv_msgtx = CONV #( lo_exception_as_root->previous->get_text( ) )
+                                                      iv_msgty = 'E' ) INTO TABLE rt_messages.
+      ENDIF.
+    ENDIF.
+
+##TODO. " Implement customer-specific message retrieving
+*    CASE TYPE OF io_exception.
+*      WHEN TYPE /acod/cx_asys_msg.
+*        INSERT LINES OF /acod/cl_asys_handle_messages=>get_ret2_from_exception( io_exception_class = io_exception ) INTO TABLE rt_messages.
+*
+*      WHEN TYPE zcx_dgl_error.
+*        DATA(lx_dgl_error) = CAST zcx_dgl_error( io_exception ).
+*        IF lx_dgl_error->message IS NOT INITIAL.
+*          INSERT lx_dgl_error->message INTO TABLE rt_messages.
+*        ELSEIF lx_dgl_error->messages IS NOT INITIAL.
+*          INSERT LINES OF lx_dgl_error->messages INTO TABLE rt_messages.
+*        ELSE.
+*          INSERT LINES OF /acod/cl_asys_handle_messages=>get_ret2_from_exception( io_exception_class = io_exception ) INTO TABLE rt_messages.
+*        ENDIF.
+*
+*    ENDCASE.
+
+  ENDMETHOD.
+
+
   METHOD get_text_by_super.
 
     CHECK exception->root IS NOT INITIAL.
