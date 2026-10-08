@@ -7,13 +7,30 @@ CLASS zcx_root DEFINITION
                  zcx_dynamic_check.
 
   PUBLIC SECTION.
+    INTERFACES zcx_if_apack_dep_logging.
+
+    ALIASES get_message       FOR zcx_if_apack_dep_logging~get_message.
+    ALIASES get_messages      FOR zcx_if_apack_dep_logging~get_messages.
+    ALIASES get_messages_ext  FOR zcx_if_apack_dep_logging~get_messages_ext.
+    ALIASES get_messages_prev FOR zcx_if_apack_dep_logging~get_messages_prev.
+    ALIASES log_info          FOR zcx_if_apack_dep_logging~log_info.
+    ALIASES log_messages      FOR zcx_if_apack_dep_logging~log_messages.
+
+    CONSTANTS: BEGIN OF mc_obj_id,
+                 generic TYPE objectname VALUE 'OBJECT',
+               END OF mc_obj_id.
+
     CLASS-METHODS conv_sap_cx
       IMPORTING io_previous        TYPE REF TO cx_root
       RETURNING VALUE(ro_instance) TYPE REF TO zcx_if_check_class.
 
-    CLASS-METHODS get_messages_ext
-      IMPORTING io_exception       TYPE REF TO cx_root
-      RETURNING VALUE(rt_messages) TYPE bapiret2_t.
+    CLASS-METHODS det_class_name
+      IMPORTING io_exception         TYPE REF TO zcx_if_check_class
+      RETURNING VALUE(rv_class_name) TYPE classname.
+
+    CLASS-METHODS get_class_name
+      IMPORTING io_exception         TYPE REF TO cx_root
+      RETURNING VALUE(rv_class_name) TYPE classname.
 
     METHODS constructor
       IMPORTING io_exception        TYPE REF TO zcx_if_check_class
@@ -25,6 +42,17 @@ CLASS zcx_root DEFINITION
                 it_input_data       TYPE rsra_t_alert_definition
                 is_auto_log_enabled TYPE abap_bool.
 
+    METHODS get_call_on_super
+      RETURNING VALUE(rv_result) TYPE abap_bool.
+
+    METHODS reset_call_on_super.
+    METHODS register_call_on_super.
+
+    METHODS display_message.
+
+    METHODS is_dflt_message
+      RETURNING VALUE(rv_result) TYPE abap_bool.
+
   PROTECTED SECTION.
     TYPES: BEGIN OF s_dflt_textid,
              msgid TYPE msgid,
@@ -32,10 +60,6 @@ CLASS zcx_root DEFINITION
              msgtx TYPE bapi_msg,
            END OF s_dflt_textid,
            t_dflt_textids TYPE SORTED TABLE OF s_dflt_textid WITH UNIQUE KEY msgid msgno.
-
-    CONSTANTS: BEGIN OF mc_obj_id,
-                 generic TYPE objectname VALUE 'OBJECT',
-               END OF mc_obj_id.
 
     CONSTANTS: BEGIN OF default_textid,
                  msgid TYPE symsgid      VALUE 'ZIAL_EXC_MGMT',
@@ -51,19 +75,7 @@ CLASS zcx_root DEFINITION
     DATA call_on_super TYPE abap_bool.
     DATA exception     TYPE REF TO zcx_if_check_class.
 
-    CLASS-METHODS det_class_name
-      IMPORTING io_exception         TYPE REF TO zcx_if_check_class
-      RETURNING VALUE(rv_class_name) TYPE classname.
-
-    CLASS-METHODS get_class_name
-      IMPORTING io_exception         TYPE REF TO cx_root
-      RETURNING VALUE(rv_class_name) TYPE classname.
-
-    CLASS-METHODS get_messages_prev
-      IMPORTING io_exception       TYPE REF TO cx_root
-      RETURNING VALUE(rt_messages) TYPE bapiret2_t.
-
-    "! Callstack is being added via zial_cl_log_msg=>GET( )->LOG_EXCEPTION( lo_exception ).
+    "! Callstack is being added via ZIAL_CL_LOG=>GET( )->LOG_EXCEPTION( lo_exception ).
     "! @parameter rt_msgde | Message details
     METHODS create_log_msgde
       RETURNING VALUE(rt_msgde) TYPE rsra_t_alert_definition.
@@ -71,15 +83,15 @@ CLASS zcx_root DEFINITION
     "! <p class="shorttext synchronized"></p>
     "! <p>NOT supported in NO_LOGGING version!</p>
     "! <p><strong>Usage:</strong>
-    "! Z-Exceptions support automatic logging if the new syntax RAISE EXCEPTION NEW
-    "! is being used or the exception object is being constructed either manually
-    "! before being thrown or in the catching block via INTO DATA(lo_exception). As
-    "! we want to handle all exception types (SAP and Non-SAP) the same way in regards
-    "! to logging,  automatic logging has been turned off (LOG_ROOT_ENABLED) and one
-    "! has to use zial_cl_log_msg=&gt;GET( )-&gt;LOG_EXCEPTION( LO_EXCEPTION ). The parameter
-    "! should be turned on again if automatic logging is to be used or everyone only
-    "! works with RAISE EXCEPTION NEW as this always triggers the object constructor
-    "! and thus the logging.</p>
+    "! Customer-specific exceptions support automatic logging if the new syntax RAISE
+    "! EXCEPTION NEW is being used or the exception object is being constructed either
+    "! manually before being thrown or in the catching block via RAISE EXCEPTION TYPE
+    "! ... INTO DATA(lo_exception). As we want to handle all exception types (SAP and
+    "! Non-SAP) the same way in regards to logging, automatic logging has been turned
+    "! off (LOG_ROOT_ENABLED). One has to use ZIAL_CL_LOG=>GET( )->LOG_EXCEPTION
+    "! ( LO_EXCEPTION ). The parameter should be turned on again if automatic logging
+    "! is to be used or everyone only works with RAISE EXCEPTION NEW as this always
+    "! triggers the object constructor and thus the logging.</p>
     METHODS log
       IMPORTING iv_with_info TYPE abap_bool DEFAULT abap_true.
 
@@ -89,28 +101,7 @@ CLASS zcx_root DEFINITION
     METHODS get_text
       RETURNING VALUE(rv_result) TYPE string.
 
-    METHODS get_message
-      RETURNING VALUE(rs_message) TYPE bapiret2.
-
-    METHODS get_messages
-      RETURNING VALUE(rt_messages) TYPE bapiret2_t.
-
     METHODS init_dflt_textids.
-
-    METHODS log_info.
-
-    METHODS log_messages.
-
-    METHODS get_call_on_super
-      RETURNING VALUE(rv_result) TYPE abap_bool.
-
-    METHODS reset_call_on_super.
-    METHODS register_call_on_super.
-
-    METHODS display_message.
-
-    METHODS is_dflt_message
-      RETURNING VALUE(rv_result) TYPE abap_bool.
 
 ENDCLASS.
 
