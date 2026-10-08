@@ -34,6 +34,8 @@ CLASS ltc_root DEFINITION FINAL
     METHODS t0011 FOR TESTING.
     METHODS t0012 FOR TESTING.
     METHODS t0013 FOR TESTING.
+    METHODS t0014 FOR TESTING.
+    METHODS t0015 FOR TESTING.
 
 ENDCLASS.
 
@@ -440,6 +442,63 @@ CLASS ltc_root IMPLEMENTATION.
     DATA(lt_messages) = zial_cl_log=>get( )->get_messages( ).
     cl_abap_unit_assert=>assert_equals( exp = 3
                                         act = lines( lt_messages ) ).
+
+  ENDMETHOD.
+
+
+  METHOD t0014.
+
+    TRY.
+        MESSAGE e530(sy) INTO DATA(lv_exp_msgtx).
+        RAISE EXCEPTION TYPE /scwm/cx_mfs.
+
+      CATCH cx_root INTO DATA(lx_error).
+        DATA(lt_act_messages) = zial_cl_log=>to_bapirets( io_exception = lx_error ).
+        DATA(lv_act_msgtx) = VALUE #( lt_act_messages[ 1 ]-message OPTIONAL ).
+        DATA(lv_act_msgty) = VALUE #( lt_act_messages[ 1 ]-type OPTIONAL ).
+
+    ENDTRY.
+
+    cl_abap_unit_assert=>assert_equals( exp = lv_exp_msgtx
+                                        act = lv_act_msgtx ).
+
+    cl_abap_unit_assert=>assert_equals( exp = 'E'
+                                        act = lv_act_msgty ).
+
+  ENDMETHOD.
+
+
+  METHOD t0015.
+
+    DATA(lv_exp_msgtx) = |Exception ZCX_WT_NOT_CREATABLE was raised|.
+
+    TRY.
+        RAISE EXCEPTION TYPE zcx_wt_not_creatable.
+
+      CATCH cx_root INTO DATA(lx_error).
+        DATA(lx_root) = zcx_root=>conv_sap_cx( lx_error ).
+
+        TRY.
+            DATA(lt_bapiret) = lx_root->get_messages( ).
+            DATA(ls_bapiret) = VALUE #( lt_bapiret[ 1 ] OPTIONAL ).
+            zial_cl_log=>to_string( iv_msgty   = 'E'
+                                    is_bapiret = ls_bapiret ).
+            /scwm/cx_mfs=>raise_exception( iv_syst = 'X' ).
+
+          CATCH /scwm/cx_mfs INTO DATA(ix_mfs).
+            MESSAGE ID ix_mfs->if_t100_message~t100key-msgid
+                    TYPE ix_mfs->mv_msgty
+                    NUMBER ix_mfs->if_t100_message~t100key-msgno
+                    WITH ix_mfs->mv_msgv1 ix_mfs->mv_msgv2
+                         ix_mfs->mv_msgv3 ix_mfs->mv_msgv4
+                    INTO DATA(lv_act_msgtx).
+
+        ENDTRY.
+
+    ENDTRY.
+
+    cl_abap_unit_assert=>assert_equals( exp = lv_exp_msgtx
+                                        act = lv_act_msgtx ).
 
   ENDMETHOD.
 

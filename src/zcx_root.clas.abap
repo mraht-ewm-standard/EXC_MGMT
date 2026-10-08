@@ -7,21 +7,13 @@ CLASS zcx_root DEFINITION
                  zcx_dynamic_check.
 
   PUBLIC SECTION.
-    CONSTANTS: BEGIN OF mc_obj_id,
-                 generic TYPE objectname VALUE 'OBJECT',
-               END OF mc_obj_id.
-
     CLASS-METHODS conv_sap_cx
       IMPORTING io_previous        TYPE REF TO cx_root
       RETURNING VALUE(ro_instance) TYPE REF TO zcx_if_check_class.
 
-    CLASS-METHODS det_class_name
-      IMPORTING io_exception         TYPE REF TO zcx_if_check_class
-      RETURNING VALUE(rv_class_name) TYPE classname.
-
-    CLASS-METHODS get_class_name
-      IMPORTING io_exception         TYPE REF TO cx_root
-      RETURNING VALUE(rv_class_name) TYPE classname.
+    CLASS-METHODS get_messages_ext
+      IMPORTING io_exception       TYPE REF TO cx_root
+      RETURNING VALUE(rt_messages) TYPE bapiret2_t.
 
     METHODS constructor
       IMPORTING io_exception        TYPE REF TO zcx_if_check_class
@@ -33,27 +25,6 @@ CLASS zcx_root DEFINITION
                 it_input_data       TYPE rsra_t_alert_definition
                 is_auto_log_enabled TYPE abap_bool.
 
-    METHODS log_info.
-
-    METHODS log_messages.
-
-    METHODS get_message
-      RETURNING VALUE(rs_message) TYPE bapiret2.
-
-    METHODS get_messages
-      RETURNING VALUE(rt_messages) TYPE bapiret2_t.
-
-    METHODS get_call_on_super
-      RETURNING VALUE(rv_result) TYPE abap_bool.
-
-    METHODS reset_call_on_super.
-    METHODS register_call_on_super.
-
-    METHODS display_message.
-
-    METHODS is_dflt_message
-      RETURNING VALUE(rv_result) TYPE abap_bool.
-
   PROTECTED SECTION.
     TYPES: BEGIN OF s_dflt_textid,
              msgid TYPE msgid,
@@ -61,6 +32,10 @@ CLASS zcx_root DEFINITION
              msgtx TYPE bapi_msg,
            END OF s_dflt_textid,
            t_dflt_textids TYPE SORTED TABLE OF s_dflt_textid WITH UNIQUE KEY msgid msgno.
+
+    CONSTANTS: BEGIN OF mc_obj_id,
+                 generic TYPE objectname VALUE 'OBJECT',
+               END OF mc_obj_id.
 
     CONSTANTS: BEGIN OF default_textid,
                  msgid TYPE symsgid      VALUE 'ZIAL_EXC_MGMT',
@@ -75,6 +50,18 @@ CLASS zcx_root DEFINITION
 
     DATA call_on_super TYPE abap_bool.
     DATA exception     TYPE REF TO zcx_if_check_class.
+
+    CLASS-METHODS det_class_name
+      IMPORTING io_exception         TYPE REF TO zcx_if_check_class
+      RETURNING VALUE(rv_class_name) TYPE classname.
+
+    CLASS-METHODS get_class_name
+      IMPORTING io_exception         TYPE REF TO cx_root
+      RETURNING VALUE(rv_class_name) TYPE classname.
+
+    CLASS-METHODS get_messages_prev
+      IMPORTING io_exception       TYPE REF TO cx_root
+      RETURNING VALUE(rt_messages) TYPE bapiret2_t.
 
     "! Callstack is being added via zial_cl_log_msg=>GET( )->LOG_EXCEPTION( lo_exception ).
     "! @parameter rt_msgde | Message details
@@ -102,7 +89,28 @@ CLASS zcx_root DEFINITION
     METHODS get_text
       RETURNING VALUE(rv_result) TYPE string.
 
+    METHODS get_message
+      RETURNING VALUE(rs_message) TYPE bapiret2.
+
+    METHODS get_messages
+      RETURNING VALUE(rt_messages) TYPE bapiret2_t.
+
     METHODS init_dflt_textids.
+
+    METHODS log_info.
+
+    METHODS log_messages.
+
+    METHODS get_call_on_super
+      RETURNING VALUE(rv_result) TYPE abap_bool.
+
+    METHODS reset_call_on_super.
+    METHODS register_call_on_super.
+
+    METHODS display_message.
+
+    METHODS is_dflt_message
+      RETURNING VALUE(rv_result) TYPE abap_bool.
 
 ENDCLASS.
 
@@ -174,23 +182,29 @@ CLASS zcx_root IMPLEMENTATION.
 
       CASE lv_index.
         WHEN 1.
-          CHECK exception->messages IS NOT INITIAL.
+          IF exception->messages IS INITIAL.
+            CONTINUE.
+          ENDIF.
           exception->message = VALUE #( exception->messages[ 1 ] OPTIONAL ).
 
         WHEN 2.
-          CHECK lo_exception_as_root->textid IS NOT INITIAL
-            AND lo_exception_as_root->textid NE lo_exception_as_root->cx_root.
+          IF    lo_exception_as_root->textid IS INITIAL
+             OR lo_exception_as_root->textid EQ lo_exception_as_root->cx_root.
+            CONTINUE.
+          ENDIF.
           cl_message_helper=>get_otr_text_raw( EXPORTING textid = lo_exception_as_root->textid
                                                IMPORTING result = DATA(lv_msgtx) ).
           cl_message_helper=>replace_text_params( EXPORTING obj    = exception
                                                   CHANGING  result = lv_msgtx ).
-          exception->message = zial_cl_log_msg=>to_bapiret( iv_msgty = 'E'
+          exception->message = zial_cl_log=>to_bapiret( iv_msgty = 'E'
                                                         iv_msgtx = lv_msgtx ).
 
         WHEN 3.
-          CHECK exception->if_t100_message~t100key IS NOT INITIAL
-            AND exception->if_t100_message~t100key NE exception->if_t100_message~default_textid
-            AND exception->if_t100_message~t100key NE default_textid.
+          IF    exception->if_t100_message~t100key IS INITIAL
+             OR exception->if_t100_message~t100key EQ exception->if_t100_message~default_textid
+             OR exception->if_t100_message~t100key EQ default_textid.
+            CONTINUE.
+          ENDIF.
 
           DATA(ls_message) = zcl_message_statement_helper=>get_t100_for_object( exception ).
           IF exception->if_t100_dyn_msg~msgty IS NOT INITIAL.
@@ -209,7 +223,7 @@ CLASS zcx_root IMPLEMENTATION.
             ls_message-msgv4 = exception->if_t100_dyn_msg~msgv4.
           ENDIF.
 
-          exception->message = zial_cl_log_msg=>to_bapiret( iv_msgid = ls_message-msgid
+          exception->message = zial_cl_log=>to_bapiret( iv_msgid = ls_message-msgid
                                                         iv_msgty = ls_message-msgty
                                                         iv_msgno = ls_message-msgno
                                                         iv_msgv1 = ls_message-msgv1
@@ -218,18 +232,20 @@ CLASS zcx_root IMPLEMENTATION.
                                                         iv_msgv4 = ls_message-msgv4 ).
 
         WHEN 4.
-          CHECK lo_exception_as_root->previous IS BOUND.
+          IF lo_exception_as_root->previous IS NOT BOUND.
+            CONTINUE.
+          ENDIF.
           IF lo_exception_as_root->previous IS INSTANCE OF zcx_if_check_class.
             exception->message = CAST zcx_if_check_class( lo_exception_as_root->previous )->get_message( ).
           ELSE.
             lv_msgtx = lo_exception_as_root->previous->get_text( ).
-            exception->message = zial_cl_log_msg=>to_bapiret( iv_msgty = 'E'
+            exception->message = zial_cl_log=>to_bapiret( iv_msgty = 'E'
                                                           iv_msgtx = lv_msgtx ).
           ENDIF.
 
         WHEN OTHERS.
           lv_msgtx = get_text_by_super( ).
-          exception->message = zial_cl_log_msg=>to_bapiret( iv_msgty = 'E'
+          exception->message = zial_cl_log=>to_bapiret( iv_msgty = 'E'
                                                         iv_msgtx = lv_msgtx ).
           EXIT.
 
@@ -244,16 +260,7 @@ CLASS zcx_root IMPLEMENTATION.
 
   METHOD get_messages.
 
-    DATA(lo_exception_as_root) = CAST cx_root( exception ).
-
-    IF lo_exception_as_root->previous IS BOUND.
-      IF lo_exception_as_root->previous IS INSTANCE OF zcx_if_check_class.
-        INSERT LINES OF CAST zcx_if_check_class( lo_exception_as_root->previous )->get_messages( ) INTO TABLE rt_messages.
-      ELSE.
-        INSERT LINES OF zial_cl_log_msg=>to_bapirets( iv_msgtx = CONV #( lo_exception_as_root->previous->get_text( ) )
-                                                  iv_msgty = 'E' ) INTO TABLE rt_messages.
-      ENDIF.
-    ENDIF.
+    rt_messages = get_messages_prev( CAST #( exception ) ).
 
     INSERT LINES OF exception->messages INTO TABLE rt_messages.
 
@@ -261,6 +268,49 @@ CLASS zcx_root IMPLEMENTATION.
     IF         ls_message IS NOT INITIAL
        AND NOT line_exists( rt_messages[ table_line = ls_message ] ).
       INSERT ls_message INTO TABLE rt_messages.
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD get_messages_prev.
+
+    DATA(lo_exception_as_root) = CAST cx_root( io_exception ).
+    IF lo_exception_as_root->previous IS BOUND.
+      IF lo_exception_as_root->previous IS INSTANCE OF zcx_if_check_class.
+        INSERT LINES OF CAST zcx_if_check_class( lo_exception_as_root->previous )->get_messages( ) INTO TABLE rt_messages.
+      ELSE.
+        INSERT LINES OF zial_cl_log=>to_bapirets( iv_msgtx = CONV #( lo_exception_as_root->previous->get_text( ) )
+                                                  iv_msgty = 'E' ) INTO TABLE rt_messages.
+      ENDIF.
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD get_messages_ext.
+
+    rt_messages = get_messages_prev( io_exception ).
+
+    ##TODO. " Implement support for customer-specific exception classes
+*    CASE TYPE OF io_exception.
+*      WHEN TYPE /acod/cx_asys_error.
+*        INSERT LINES OF /acod/cl_asys_handle_messages=>get_ret2_from_exception( io_exception ) INTO TABLE rt_messages.
+*
+*      WHEN TYPE zcx_dgl_error.
+*        DATA(lx_dgl_error) = CAST zcx_dgl_error( io_exception ).
+*        IF lx_dgl_error->message IS NOT INITIAL.
+*          INSERT lx_dgl_error->message INTO TABLE rt_messages.
+*        ELSEIF lx_dgl_error->messages IS NOT INITIAL.
+*          INSERT LINES OF lx_dgl_error->messages INTO TABLE rt_messages.
+*        ELSE.
+*          INSERT LINES OF /acod/cl_asys_handle_messages=>get_ret2_from_exception( io_exception ) INTO TABLE rt_messages.
+*        ENDIF.
+*
+*    ENDCASE.
+
+    IF rt_messages IS INITIAL.
+      rt_messages = VALUE #( ( zial_cl_log=>to_bapiret( iv_msgtx = CONV #( io_exception->get_text( ) ) ) ) ).
     ENDIF.
 
   ENDMETHOD.
@@ -352,10 +402,12 @@ CLASS zcx_root IMPLEMENTATION.
   METHOD is_dflt_message.
 
     DATA(ls_message) = get_message( ).
-    CHECK line_exists( mt_dflt_textids[ msgid = ls_message-id
-                                        msgno = ls_message-number ] )
-       OR (     ls_message-message IS NOT INITIAL
-            AND line_exists( mt_dflt_textids[ msgtx = ls_message-message ] ) ).
+    IF     NOT line_exists( mt_dflt_textids[ msgid = ls_message-id
+                                             msgno = ls_message-number ] )
+       AND (        ls_message-message IS INITIAL
+             OR NOT line_exists( mt_dflt_textids[ msgtx = ls_message-message ] ) ).
+      RETURN.
+    ENDIF.
 
     rv_result = abap_true.
 
@@ -370,8 +422,7 @@ CLASS zcx_root IMPLEMENTATION.
 
       WHEN OTHERS.
         TRY.
-            RAISE EXCEPTION TYPE zcx_sap_cx
-              EXPORTING previous = io_previous.
+            RAISE EXCEPTION NEW zcx_sap_cx( previous = io_previous ).
 
           CATCH zcx_static_check INTO DATA(lo_instance).
             ro_instance ?= lo_instance.
