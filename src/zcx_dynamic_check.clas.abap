@@ -128,14 +128,14 @@ CLASS zcx_dynamic_check IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD zcx_if_check_class~log.
+  METHOD log.
 
     root->log( iv_with_info ).
 
   ENDMETHOD.
 
 
-  METHOD zcx_if_check_class~log_info.
+  METHOD log_info.
 
     root->log_info( ).
 
