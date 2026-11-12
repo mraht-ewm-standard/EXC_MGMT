@@ -15,8 +15,17 @@ INTERFACE zcx_if_check_class
   "! Turn on/off automatic logging
   DATA is_auto_log_enabled TYPE abap_bool.
 
-  METHODS get_message  RETURNING VALUE(rs_message)  TYPE bapiret2.
-  METHODS get_messages RETURNING VALUE(rt_messages) TYPE bapiret2_t.
+  METHODS get_message
+    RETURNING VALUE(rs_message) TYPE bapiret2.
+
+  METHODS get_messages
+    RETURNING VALUE(rt_messages) TYPE bapiret2_t.
+
+  METHODS set_message
+    IMPORTING is_message TYPE bapiret2.
+
+  METHODS set_messages
+    IMPORTING it_messages TYPE bapiret2_t.
 
   METHODS log
     IMPORTING iv_with_info TYPE abap_bool DEFAULT abap_true.
