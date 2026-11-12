@@ -20,6 +20,8 @@ CLASS zcx_no_check DEFINITION
 
     ALIASES get_message  FOR zcx_if_check_class~get_message.
     ALIASES get_messages FOR zcx_if_check_class~get_messages.
+    ALIASES set_message  FOR zcx_if_check_class~set_message.
+    ALIASES set_messages FOR zcx_if_check_class~set_messages.
     ALIASES log          FOR zcx_if_check_class~log.
     ALIASES log_info     FOR zcx_if_check_class~log_info.
 
@@ -83,16 +85,30 @@ CLASS zcx_no_check IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD zcx_if_check_class~get_message.
+  METHOD get_message.
 
     rs_message = root->get_message( ).
 
   ENDMETHOD.
 
 
-  METHOD zcx_if_check_class~get_messages.
+  METHOD get_messages.
 
     rt_messages = root->get_messages( ).
+
+  ENDMETHOD.
+
+
+  METHOD set_message.
+
+    root->set_message( is_message ).
+
+  ENDMETHOD.
+
+
+  METHOD set_messages.
+
+    root->set_messages( it_messages ).
 
   ENDMETHOD.
 
@@ -112,14 +128,14 @@ CLASS zcx_no_check IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD zcx_if_check_class~log.
+  METHOD log.
 
     root->log( iv_with_info ).
 
   ENDMETHOD.
 
 
-  METHOD zcx_if_check_class~log_info.
+  METHOD log_info.
 
     root->log_info( ).
 
