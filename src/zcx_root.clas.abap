@@ -11,6 +11,8 @@ CLASS zcx_root DEFINITION
 
     ALIASES get_message       FOR zcx_if_apack_dep_logging~get_message.
     ALIASES get_messages      FOR zcx_if_apack_dep_logging~get_messages.
+    ALIASES set_message       FOR zcx_if_apack_dep_logging~set_message.
+    ALIASES set_messages      FOR zcx_if_apack_dep_logging~set_messages.
     ALIASES get_messages_ext  FOR zcx_if_apack_dep_logging~get_messages_ext.
     ALIASES get_messages_prev FOR zcx_if_apack_dep_logging~get_messages_prev.
     ALIASES log_info          FOR zcx_if_apack_dep_logging~log_info.
@@ -259,6 +261,28 @@ CLASS zcx_root IMPLEMENTATION.
     IF         ls_message IS NOT INITIAL
        AND NOT line_exists( rt_messages[ table_line = ls_message ] ).
       INSERT ls_message INTO TABLE rt_messages.
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD set_message.
+
+    exception->message = is_message.
+
+    IF exception->is_auto_log_enabled EQ abap_true.
+      log( ).
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD set_messages.
+
+    exception->messages = it_messages.
+
+    IF exception->is_auto_log_enabled EQ abap_true.
+      log( ).
     ENDIF.
 
   ENDMETHOD.
