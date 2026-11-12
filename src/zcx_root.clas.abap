@@ -11,6 +11,8 @@ CLASS zcx_root DEFINITION
 
     ALIASES get_message       FOR zcx_if_apack_dep_logging~get_message.
     ALIASES get_messages      FOR zcx_if_apack_dep_logging~get_messages.
+    ALIASES set_message       FOR zcx_if_apack_dep_logging~set_message.
+    ALIASES set_messages      FOR zcx_if_apack_dep_logging~set_messages.
     ALIASES get_messages_ext  FOR zcx_if_apack_dep_logging~get_messages_ext.
     ALIASES get_messages_prev FOR zcx_if_apack_dep_logging~get_messages_prev.
     ALIASES log_info          FOR zcx_if_apack_dep_logging~log_info.
@@ -163,6 +165,20 @@ CLASS zcx_root IMPLEMENTATION.
 
 
   METHOD get_messages.
+
+    ##NOT_SUPPORTED. " Package LOGGING missing!
+
+  ENDMETHOD.
+
+
+  METHOD set_message.
+
+    ##NOT_SUPPORTED. " Package LOGGING missing!
+
+  ENDMETHOD.
+
+
+  METHOD set_messages.
 
     ##NOT_SUPPORTED. " Package LOGGING missing!
 
